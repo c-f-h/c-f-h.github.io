@@ -1,6 +1,6 @@
 baseURL: https://c-f-h.github.io/
 languageCode: en-us
-title: cfh - Personal blog
+title: "cfh::blog"
 theme: ["PaperMod"]
 
 publishDir: ../docs
@@ -10,7 +10,7 @@ pagination:
   pagerSize: 10
 
 params:
-  description: "Updates on personal projects"
+  description: "Notes on personal projects"
   keywords: [Blog]
   author: cfh
   #images: ["<link or path of image for opengraph, twitter-cards>"]
@@ -33,13 +33,13 @@ params:
   showtoc: false
   tocopen: false
 
-  #assets:
+  assets:
   #  # disableHLJS: true # to disable highlight.js
   #  # disableFingerprinting: true
   #  favicon: "<link / abs url>"
   #  favicon16x16: "<link / abs url>"
   #  favicon32x32: "<link / abs url>"
-  #  apple_touch_icon: "<link / abs url>"
+    apple_touch_icon: ""
   #  safari_pinned_tab: "<link / abs url>"
 
   label:
@@ -47,7 +47,7 @@ params:
 
   socialIcons:
     - name: github
-      url: "https://github.com/"
+      url: "https://github.com/c-f-h/"
 
 menu:
   main:
@@ -74,3 +74,20 @@ markup:
     # guessSyntax: true
     # lineNos: true
     # style: monokai
+
+markup:
+  goldmark:
+    extensions:
+      passthrough:
+        delimiters:
+          block:
+          - - \[
+            - \]
+          - - $$
+            - $$
+          inline:
+          - - \(
+            - \)
+        enable: true
+params:
+  math: true

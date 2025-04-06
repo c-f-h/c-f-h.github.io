@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>The curved triangle problem | cfh::blog</title>
+<meta name="keywords" content="Blog">
+<meta name="description" content="As the starting point for a little machine learning project, I chose the following geometric problem.
+We are given a curved triangle in 3D space.
+It&rsquo;s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges.
+These coefficients are interpreted as control points of a quadratic triangular Bezier surface.
+Mathematically speaking, we map parameters \((u,v)\) with \( 0 \le u, v;\ u&#43;v \le 1\) to">
+<meta name="author" content="">
+<link rel="canonical" href="https://c-f-h.github.io/post/the-triangle-problem/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.6da9a63d25a9608bca2f7f907a030e887a7dd3c3f3918e4cc113129361414bda.css" integrity="sha256-bammPSWpYIvKL3&#43;QegMOiHp908PzkY5MwRMSk2FBS9o=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://c-f-h.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://c-f-h.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/the-triangle-problem/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><head>
+  
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  
+      inlineMath: [['\\(', '\\)']]                  
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+</script>
+  
+</head><meta property="og:url" content="https://c-f-h.github.io/post/the-triangle-problem/">
+  <meta property="og:site_name" content="cfh::blog">
+  <meta property="og:title" content="The curved triangle problem">
+  <meta property="og:description" content="As the starting point for a little machine learning project, I chose the following geometric problem. We are given a curved triangle in 3D space. It’s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges. These coefficients are interpreted as control points of a quadratic triangular Bezier surface. Mathematically speaking, we map parameters \((u,v)\) with \( 0 \le u, v;\ u&#43;v \le 1\) to">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2025-04-06T21:06:14+02:00">
+    <meta property="article:modified_time" content="2025-04-06T21:06:14+02:00">
+    <meta property="article:tag" content="Blog">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The curved triangle problem">
+<meta name="twitter:description" content="As the starting point for a little machine learning project, I chose the following geometric problem.
+We are given a curved triangle in 3D space.
+It&rsquo;s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges.
+These coefficients are interpreted as control points of a quadratic triangular Bezier surface.
+Mathematically speaking, we map parameters \((u,v)\) with \( 0 \le u, v;\ u&#43;v \le 1\) to">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://c-f-h.github.io/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "The curved triangle problem",
+      "item": "https://c-f-h.github.io/post/the-triangle-problem/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "The curved triangle problem",
+  "name": "The curved triangle problem",
+  "description": "As the starting point for a little machine learning project, I chose the following geometric problem. We are given a curved triangle in 3D space. It\u0026rsquo;s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges. These coefficients are interpreted as control points of a quadratic triangular Bezier surface. Mathematically speaking, we map parameters \\((u,v)\\) with \\( 0 \\le u, v;\\ u+v \\le 1\\) to\n",
+  "keywords": [
+    "Blog"
+  ],
+  "articleBody": "As the starting point for a little machine learning project, I chose the following geometric problem. We are given a curved triangle in 3D space. It’s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges. These coefficients are interpreted as control points of a quadratic triangular Bezier surface. Mathematically speaking, we map parameters \\((u,v)\\) with \\( 0 \\le u, v;\\ u+v \\le 1\\) to\n\\[ T(u,v) = P_{200} u^2 + P_{020} v^2 + P_{002} w^2 + P_{110} 2uv + P_{101} 2uw + P_{011} 2vw, \\]where \\(w = 1 - u - v\\) is the third barycentric coordinate, \\( P_{200}, P_{020}, P_{002} \\) are the 3D vertices, and \\(P_{110}, P_{101}, P_{011} \\) are the edge control points.\nHere’s the beginning of a simple implementation in C++ of that concept, using the Eigen library.\nclass CurvedTriangle { public: CurvedTriangle(const Eigen::Vector3d\u0026 p200, const Eigen::Vector3d\u0026 p020, const Eigen::Vector3d\u0026 p002, const Eigen::Vector3d\u0026 p110, const Eigen::Vector3d\u0026 p101, const Eigen::Vector3d\u0026 p011) : P200(p200), P020(p020), P002(p002), P110(p110), P101(p101), P011(p011) {} Eigen::Vector3d map(double u, double v) const { double w = 1 - u - v; return P200 * (u * u) + P020 * (v * v) + P002 * (w * w) + P110 * (2 * u * v) + P101 * (2 * u * w) + P011 * (2 * v * w); } Eigen::Vector3d P200, P020, P002, P110, P101, P011; } Now unlike linear triangles, it’s possible for these curved triangles to have self-intersections, that is, parameter values \\( (u_1,v_1) \\ne (u_2,v_2) \\) such that \\(T(u_1,v_1) = T(u_2,v_2)\\). Here’s a curved triangle without self-intersection: And here’s one that does self-intersect: The problem The question is simple: given the six vectors determining the triangle, can we find out if it self-intersects?\nThe approach First up we determine an algorithmic way, using some computational geometry, to check for self-intersections. Once that is done, we can generate as much input data as we like for an ML approach and see if we can come up with a good model.\nAlthough both inputs (a couple of floats) and output (just a binary classifier) for this problem are simple, the problem isn’t trivial: the function we are trying to learn is highly nonlinear and discontinuous. So it should serve as an interesting test case for learning about ML techniques.\n",
+  "wordCount" : "387",
+  "inLanguage": "en",
+  "datePublished": "2025-04-06T21:06:14+02:00",
+  "dateModified": "2025-04-06T21:06:14+02:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://c-f-h.github.io/post/the-triangle-problem/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "cfh::blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://c-f-h.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://c-f-h.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://c-f-h.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      The curved triangle problem
+    </h1>
+    <div class="post-meta"><span title='2025-04-06 21:06:14 +0200 CEST'>April 6, 2025</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>As the starting point for a little machine learning project, I chose the following geometric problem.
+We are given a curved triangle in 3D space.
+It&rsquo;s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges.
+These coefficients are interpreted as control points of a quadratic triangular Bezier surface.
+Mathematically speaking, we map parameters \((u,v)\) with \( 0 \le u, v;\ u+v \le 1\) to</p>
+\[
+T(u,v) = P_{200} u^2 + P_{020} v^2 + P_{002} w^2 + P_{110} 2uv + P_{101} 2uw + P_{011} 2vw,
+\]<p>where \(w = 1 - u - v\) is the third barycentric coordinate,
+\( P_{200}, P_{020}, P_{002} \) are the 3D vertices,
+and \(P_{110}, P_{101}, P_{011} \) are the edge control points.</p>
+<p>Here&rsquo;s the beginning of a simple implementation in C++ of that concept, using the <a href="https://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen</a> library.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">CurvedTriangle</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">CurvedTriangle</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span> <span class="n">p200</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span> <span class="n">p020</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span> <span class="n">p002</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                   <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span> <span class="n">p110</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span> <span class="n">p101</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span> <span class="n">p011</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">:</span> <span class="n">P200</span><span class="p">(</span><span class="n">p200</span><span class="p">),</span> <span class="n">P020</span><span class="p">(</span><span class="n">p020</span><span class="p">),</span> <span class="n">P002</span><span class="p">(</span><span class="n">p002</span><span class="p">),</span> <span class="n">P110</span><span class="p">(</span><span class="n">p110</span><span class="p">),</span> <span class="n">P101</span><span class="p">(</span><span class="n">p101</span><span class="p">),</span> <span class="n">P011</span><span class="p">(</span><span class="n">p011</span><span class="p">)</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span> <span class="n">map</span><span class="p">(</span><span class="kt">double</span> <span class="n">u</span><span class="p">,</span> <span class="kt">double</span> <span class="n">v</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">double</span> <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">u</span> <span class="o">-</span> <span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">P200</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">u</span><span class="p">)</span> <span class="o">+</span> <span class="n">P020</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">P002</span> <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">w</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">             <span class="o">+</span> <span class="n">P110</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">P101</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="n">P011</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">w</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span> <span class="n">P200</span><span class="p">,</span> <span class="n">P020</span><span class="p">,</span> <span class="n">P002</span><span class="p">,</span> <span class="n">P110</span><span class="p">,</span> <span class="n">P101</span><span class="p">,</span> <span class="n">P011</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Now unlike linear triangles, it&rsquo;s possible for these curved triangles to have self-intersections, that is,
+parameter values \( (u_1,v_1) \ne (u_2,v_2) \) such that \(T(u_1,v_1) = T(u_2,v_2)\).
+Here&rsquo;s a curved triangle without self-intersection:
+<img alt="Triangle without self-intersection" loading="lazy" src="/post/the-triangle-problem/nointersect.png"></p>
+<p>And here&rsquo;s one that does self-intersect:
+<img alt="Triangle with self-intersection" loading="lazy" src="/post/the-triangle-problem/intersect.png"></p>
+<h2 id="the-problem">The problem<a hidden class="anchor" aria-hidden="true" href="#the-problem">#</a></h2>
+<p>The question is simple: given the six vectors determining the triangle, can we find out if it self-intersects?</p>
+<h2 id="the-approach">The approach<a hidden class="anchor" aria-hidden="true" href="#the-approach">#</a></h2>
+<p>First up we determine an algorithmic way, using some computational geometry, to check for self-intersections. Once that is done, we can generate as
+much input data as we like for an ML approach and see if we can come up with a good model.</p>
+<p>Although both inputs (a couple of floats) and output (just a binary classifier) for this problem are simple,
+the problem isn&rsquo;t trivial: the function we are trying to learn is highly nonlinear and discontinuous.
+So it should serve as an interesting test case for learning about ML techniques.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://c-f-h.github.io/tags/blog/">Blog</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://c-f-h.github.io/">cfh::blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
