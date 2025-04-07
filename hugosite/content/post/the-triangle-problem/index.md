@@ -1,7 +1,8 @@
 ---
 title: 'The curved triangle problem'
 date: 2025-04-06T21:06:14+02:00
-tags: ["Blog"]
+tags: ['Math']
+categories: ["The Triangle Project"]
 ---
 
 As the starting point for a little machine learning project, I chose the following geometric problem.
@@ -52,7 +53,8 @@ The question is simple: given the six vectors determining the triangle, can we f
 
 ## The approach
 
-First up we determine an algorithmic way, using some computational geometry, to check for self-intersections. Once that is done, we can generate as
+First up we determine [an algorithmic way]({{<relref computing-intersections>}}), using some computational geometry,
+to check for self-intersections. Once that is done, we can generate as
 much input data as we like for an ML approach and see if we can come up with a good model.
 
 Although both inputs (a couple of floats) and output (just a binary classifier) for this problem are simple,

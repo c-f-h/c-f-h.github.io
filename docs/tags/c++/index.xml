@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Posts on cfh::blog</title>
-    <link>https://c-f-h.github.io/post/</link>
-    <description>Recent content in Posts on cfh::blog</description>
+    <title>C&#43;&#43; on cfh::blog</title>
+    <link>https://c-f-h.github.io/tags/c&#43;&#43;/</link>
+    <description>Recent content in C&#43;&#43; on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 07 Apr 2025 17:52:07 +0200</lastBuildDate>
-    <atom:link href="https://c-f-h.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://c-f-h.github.io/tags/c++/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Computing Self-Intersections, the Geometric Way</title>
       <link>https://c-f-h.github.io/post/computing-intersections/</link>
@@ -24,17 +24,6 @@ compute self-intersections of a curved triangle in an accurate and hopefully eff
 &lt;h2 id=&#34;subdividing-the-triangle&#34;&gt;Subdividing the triangle&lt;/h2&gt;
 &lt;p&gt;We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive
 procedure, starting with the full triangle &lt;code&gt;{(0,0), (1,0), (0,1)}&lt;/code&gt;:&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>The curved triangle problem</title>
-      <link>https://c-f-h.github.io/post/the-triangle-problem/</link>
-      <pubDate>Sun, 06 Apr 2025 21:06:14 +0200</pubDate>
-      <guid>https://c-f-h.github.io/post/the-triangle-problem/</guid>
-      <description>&lt;p&gt;As the starting point for a little machine learning project, I chose the following geometric problem.
-We are given a curved triangle in 3D space.
-It&amp;rsquo;s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges.
-These coefficients are interpreted as control points of a quadratic triangular Bezier surface.
-Mathematically speaking, we map parameters \((u,v)\) with \( 0 \le u, v;\ u+v \le 1\) to&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>

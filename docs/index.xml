@@ -6,8 +6,25 @@
     <description>Recent content on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 06 Apr 2025 21:06:14 +0200</lastBuildDate>
+    <lastBuildDate>Mon, 07 Apr 2025 17:52:07 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Computing Self-Intersections, the Geometric Way</title>
+      <link>https://c-f-h.github.io/post/computing-intersections/</link>
+      <pubDate>Mon, 07 Apr 2025 17:52:07 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/computing-intersections/</guid>
+      <description>&lt;p&gt;Before we can apply ML to the &lt;a href=&#34;https://c-f-h.github.io/post/the-triangle-problem/&#34;&gt;triangle problem&lt;/a&gt;, we need to be able to
+compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.&lt;/p&gt;
+&lt;p&gt;The basic approach is:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;#subdividing-the-triangle&#34;&gt;Subdivide&lt;/a&gt; the curved triangle into smaller subtriangles&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#finding-candidate-pairs-using-a-bounding-volume-hierarchy-bvh&#34;&gt;Find&lt;/a&gt; potentially intersecting pairs of subtriangles&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#finding-true-intersection-pairs&#34;&gt;Check&lt;/a&gt; for actual intersections among these candidate pairs&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;subdividing-the-triangle&#34;&gt;Subdividing the triangle&lt;/h2&gt;
+&lt;p&gt;We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive
+procedure, starting with the full triangle &lt;code&gt;{(0,0), (1,0), (0,1)}&lt;/code&gt;:&lt;/p&gt;</description>
+    </item>
     <item>
       <title>The curved triangle problem</title>
       <link>https://c-f-h.github.io/post/the-triangle-problem/</link>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Computing Self-Intersections, the Geometric Way | cfh::blog</title>
+<meta name="keywords" content="Math, C&#43;&#43;">
+<meta name="description" content="Before we can apply ML to the triangle problem, we need to be able to
+compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.
+The basic approach is:
+
+Subdivide the curved triangle into smaller subtriangles
+Find potentially intersecting pairs of subtriangles
+Check for actual intersections among these candidate pairs
+
+Subdividing the triangle
+We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive
+procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:">
+<meta name="author" content="">
+<link rel="canonical" href="https://c-f-h.github.io/post/computing-intersections/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.6da9a63d25a9608bca2f7f907a030e887a7dd3c3f3918e4cc113129361414bda.css" integrity="sha256-bammPSWpYIvKL3&#43;QegMOiHp908PzkY5MwRMSk2FBS9o=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://c-f-h.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://c-f-h.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/computing-intersections/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><head>
+  
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  
+      inlineMath: [['\\(', '\\)']]                  
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+</script>
+  
+</head><meta property="og:url" content="https://c-f-h.github.io/post/computing-intersections/">
+  <meta property="og:site_name" content="cfh::blog">
+  <meta property="og:title" content="Computing Self-Intersections, the Geometric Way">
+  <meta property="og:description" content="Before we can apply ML to the triangle problem, we need to be able to compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.
+The basic approach is:
+Subdivide the curved triangle into smaller subtriangles Find potentially intersecting pairs of subtriangles Check for actual intersections among these candidate pairs Subdividing the triangle We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2025-04-07T17:52:07+02:00">
+    <meta property="article:modified_time" content="2025-04-07T17:52:07+02:00">
+    <meta property="article:tag" content="Math">
+    <meta property="article:tag" content="C&#43;&#43;">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Computing Self-Intersections, the Geometric Way">
+<meta name="twitter:description" content="Before we can apply ML to the triangle problem, we need to be able to
+compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.
+The basic approach is:
+
+Subdivide the curved triangle into smaller subtriangles
+Find potentially intersecting pairs of subtriangles
+Check for actual intersections among these candidate pairs
+
+Subdividing the triangle
+We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive
+procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://c-f-h.github.io/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Computing Self-Intersections, the Geometric Way",
+      "item": "https://c-f-h.github.io/post/computing-intersections/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Computing Self-Intersections, the Geometric Way",
+  "name": "Computing Self-Intersections, the Geometric Way",
+  "description": "Before we can apply ML to the triangle problem, we need to be able to compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.\nThe basic approach is:\nSubdivide the curved triangle into smaller subtriangles Find potentially intersecting pairs of subtriangles Check for actual intersections among these candidate pairs Subdividing the triangle We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:\n",
+  "keywords": [
+    "Math", "C++"
+  ],
+  "articleBody": "Before we can apply ML to the triangle problem, we need to be able to compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.\nThe basic approach is:\nSubdivide the curved triangle into smaller subtriangles Find potentially intersecting pairs of subtriangles Check for actual intersections among these candidate pairs Subdividing the triangle We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:\nIf the triangle is sufficiently flat, add it to the list and return. Otherwise, split the triangle into four child triangles by connecting the three edge midpoints to each other and recurse into each of them. A sketch of the subdivision scheme.\nThis results in a list of subtriangles, given by their three vertices in (u,v)-coordinate space, that are considered flat enough and cover the entire original triangle.\nTo check if a triangle is “flat enough”, we can compute the normal distance of its curved edge midpoints from the plane defined by its three vertices and compare it to a threshold. It’s also a good idea to compute the distances of the curved edge midpoints to the corresponding linear midpoints in order to exclude triangles that are planar, but have highly curved edges.\nHaving sufficiently flat triangles gives us two things:\nFlat triangles can neither have self-intersections nor intersect neighboring flat triangles. We can check for intersections between flat triangles via a standard triangle-triangle intersection check (e.g., Devillers-Guigue). So, as a result of Step 1, we have:\nusing SubTriangle = std::array\u003cEigen::Vector2d, 3\u003e; // Three (u, v) points std::vector\u003cSubTriangle\u003e subTriangles; // List of all subtriangles However, checking all pairs of subtriangles against each other is too expensive (\\(\\mathcal O(n^2)\\), with n = subTriangles.size() routinely in the thousands or tens of thousands), even if first doing a cheaper bounding box check. We need a spatial datastructure to speed it up.\nFinding candidate pairs using a Bounding Volume Hierarchy (BVH) A BVH is a spatial tree structure, somewhat similar to an octree or a BSP tree, which is often used for collision detection and raytracing. Every node of the tree has a bounding box which contains all its children. Leaf nodes contain one (or a few) triangles. Non-leaf nodes don’t directly contain triangles, but have two child nodes, a “left” and a “right” one. The bounding boxes of the two child nodes can overlap each other, but are both contained in the parent’s bounding box.\nWe construct such a BVH tree for the list of flat subtriangles of our triangle. Constructing the tree is another recursive procedure, starting with the total list of subtriangles:\nCompute the bounding box for the given triangles. If the list contains only one triangle, construct a leaf with this triangle and its bounding box. Otherwise, separate the triangles into a “left” and a “right” group by finding the longest axis of the bounding box, sorting the triangles by their center point along that axis, and splitting the sorted list at the median. Construct a non-leaf node by recursively calling the BVH construction function for the left and right groups. The above screenshot shows a BVH tree for a curved triangle, with the depth of each node visualized as the color of its bounding box. The core recursion for building the tree is strikingly simple:\nstd::unique_ptr\u003cBVHNode\u003e BVH::buildBVH(const CurvedTriangle\u0026 triangle, const std::vector\u003cSubTriangle\u003e\u0026 subTriangles, size_t maxLeafSize) { auto node = std::make_unique\u003cBVHNode\u003e(); // Compute the bounding box for all sub-triangles node-\u003ebbox = computeBoundingBox(triangle, subTriangles); if (subTriangles.size() \u003c= maxLeafSize) { // Leaf node: store triangles and stop recursion node-\u003etriangles = subTriangles; } else { // Internal node: split and recurse auto [leftTriangles, rightTriangles] = splitTriangles(triangle, subTriangles, node-\u003ebbox); node-\u003eleft = buildBVH(triangle, leftTriangles, maxLeafSize); node-\u003eright = buildBVH(triangle, rightTriangles, maxLeafSize); } return node; } Once we have the BVH tree, finding pairs of subtriangles whose bounding boxes may intersect is simple, and yet another recursion: given pointers a and b to BVH nodes, we terminate the recursion if a-\u003ebbox and b-\u003ebbox do not intersect. Otherwise, we recurse into the children of both nodes until we reach a situation where both pointers refer to leaf nodes; then, we add all pairs formed from triangles in a and triangles in b to the list of candidate intersection pairs.\nThe BVH tree reduces the complexity of finding these candidate pairs from quadratic to \\(\\mathcal O(n \\log n)\\), where \\(n\\) is the number of subtriangles. That’s almost linear and a huge gain. So after Step 2, we have:\nstd::vector\u003cstd::pair\u003cSubTriangle, SubTriangle\u003e\u003e potentialPairs; Finding true intersection pairs Having obtained a list of pairs of subtriangles which may intersect each other according to their bounding boxes, we simply check each pair using a standard triangle-triangle intersection algorithm; I used an existing implementation of the Devillers-Guigue algorithm. We ignore the curvature here since by construction, we found these subtriangles to be sufficiently flat.\nThere is one wrinkle: triangles which neighbor each other in parameter space will always intersect because they share (parts of) an edge or a vertex; but they cannot have nontrivial intersections due to our flatness assumption. To avoid these spurious intersections, we discard pairs of triangles whose parameter-space bounding boxes intersect.\nAs a result, we obtain the list of truly intersecting pairs of subtriangles:\nstd::vector\u003cstd::pair\u003cSubTriangle, SubTriangle\u003e\u003e intpairs; If this list is nonempty, our original triangle does have self-inters ections.\nSummary Through the pipeline of\ntriangle subdivision ⟶ bounding box collision check ⟶ triangle intersection check,\nwe can determine if a given curved triangle has self-intersections in a relatively efficient way.\n",
+  "wordCount" : "928",
+  "inLanguage": "en",
+  "datePublished": "2025-04-07T17:52:07+02:00",
+  "dateModified": "2025-04-07T17:52:07+02:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://c-f-h.github.io/post/computing-intersections/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "cfh::blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://c-f-h.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://c-f-h.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://c-f-h.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Computing Self-Intersections, the Geometric Way
+    </h1>
+    <div class="post-meta"><span title='2025-04-07 17:52:07 +0200 CEST'>April 7, 2025</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>Before we can apply ML to the <a href="/post/the-triangle-problem/">triangle problem</a>, we need to be able to
+compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.</p>
+<p>The basic approach is:</p>
+<ol>
+<li><a href="#subdividing-the-triangle">Subdivide</a> the curved triangle into smaller subtriangles</li>
+<li><a href="#finding-candidate-pairs-using-a-bounding-volume-hierarchy-bvh">Find</a> potentially intersecting pairs of subtriangles</li>
+<li><a href="#finding-true-intersection-pairs">Check</a> for actual intersections among these candidate pairs</li>
+</ol>
+<h2 id="subdividing-the-triangle">Subdividing the triangle<a hidden class="anchor" aria-hidden="true" href="#subdividing-the-triangle">#</a></h2>
+<p>We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive
+procedure, starting with the full triangle <code>{(0,0), (1,0), (0,1)}</code>:</p>
+<ol>
+<li>If the triangle is sufficiently flat, add it to the list and return.</li>
+<li>Otherwise, split the triangle into four child triangles by connecting the three edge midpoints to each other
+and recurse into each of them.</li>
+</ol>
+<figure style="width:75px; margin-left:auto; margin-right:auto">
+
+
+
+<div class="goat svg-container ">
+  
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      font-family="Menlo,Lucida Console,monospace"
+      
+        viewBox="0 0 48 89"
+      >
+      <g transform='translate(8,16)'>
+<path d='M 0,32 L 16,32' fill='none' stroke='currentColor'></path>
+<path d='M 0,64 L 16,64' fill='none' stroke='currentColor'></path>
+<path d='M 16,64 L 32,64' fill='none' stroke='currentColor'></path>
+<path d='M 0,0 L 0,32' fill='none' stroke='currentColor'></path>
+<path d='M 0,32 L 0,64' fill='none' stroke='currentColor'></path>
+<path d='M 16,32 L 16,64' fill='none' stroke='currentColor'></path>
+<path d='M 0,32 L 16,64' fill='none' stroke='currentColor'></path>
+<path d='M 0,0 L 16,32' fill='none' stroke='currentColor'></path>
+<path d='M 16,32 L 32,64' fill='none' stroke='currentColor'></path>
+</g>
+
+    </svg>
+  
+</div>
+</figure>
+<p><em>A sketch of the subdivision scheme.</em></p>
+<p>This results in a list of subtriangles, given by their three vertices in (u,v)-coordinate space, that are
+considered flat enough and cover the entire original triangle.</p>
+<p>To check if a triangle is &ldquo;flat enough&rdquo;, we can compute the normal distance of its curved edge midpoints
+from the plane defined by its three vertices and compare it to a threshold. It&rsquo;s also a good idea to compute the
+distances of the curved edge midpoints to the corresponding linear midpoints in order to exclude triangles that are
+planar, but have highly curved edges.</p>
+<p>Having sufficiently flat triangles gives us two things:</p>
+<ul>
+<li>Flat triangles can neither have self-intersections nor intersect neighboring flat triangles.</li>
+<li>We can check for intersections between flat triangles via a standard triangle-triangle intersection check
+(<a href="https://raw.githubusercontent.com/erich666/jgt-code/master/Volume_08/Number_1/Guigue2003/tri_tri_intersect.c">e.g., Devillers-Guigue</a>).</li>
+</ul>
+<p>So, as a result of Step 1, we have:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="k">using</span> <span class="n">SubTriangle</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">,</span> <span class="mi">3</span><span class="o">&gt;</span><span class="p">;</span> <span class="c1">// Three (u, v) points
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">SubTriangle</span><span class="o">&gt;</span> <span class="n">subTriangles</span><span class="p">;</span>              <span class="c1">// List of all subtriangles
+</span></span></span></code></pre></div><p>However, checking all pairs of subtriangles against each other is too expensive (\(\mathcal O(n^2)\), with
+<code>n = subTriangles.size()</code> routinely in the thousands or tens of thousands), even if first doing
+a cheaper bounding box check. We need a spatial datastructure to speed it up.</p>
+<h2 id="finding-candidate-pairs-using-a-bounding-volume-hierarchy-bvh">Finding candidate pairs using a Bounding Volume Hierarchy (BVH)<a hidden class="anchor" aria-hidden="true" href="#finding-candidate-pairs-using-a-bounding-volume-hierarchy-bvh">#</a></h2>
+<p>A <a href="https://en.wikipedia.org/wiki/Bounding_volume_hierarchy">BVH</a> is a spatial tree structure, somewhat similar to an
+<a href="https://en.wikipedia.org/wiki/Octree">octree</a> or a <a href="https://en.wikipedia.org/wiki/Binary_space_partitioning">BSP tree</a>,
+which is often used for collision detection and raytracing. Every node of the tree has a bounding box which contains all
+its children. Leaf nodes contain one (or a few) triangles. Non-leaf nodes don&rsquo;t directly contain triangles, but have
+two child nodes, a &ldquo;left&rdquo; and a &ldquo;right&rdquo; one. The bounding boxes of the two child nodes can overlap each other, but are
+both contained in the parent&rsquo;s bounding box.</p>
+<p>We construct such a BVH tree for the list of flat subtriangles of our triangle.
+Constructing the tree is another recursive procedure, starting with the total list of subtriangles:</p>
+<ol>
+<li>Compute the bounding box for the given triangles.</li>
+<li>If the list contains only one triangle, construct a leaf with this triangle and its bounding box.</li>
+<li>Otherwise, separate the triangles into a &ldquo;left&rdquo; and a &ldquo;right&rdquo; group by finding the longest axis of
+the bounding box, sorting the triangles by their center point along that axis, and splitting the sorted list at the median.
+Construct a non-leaf node by recursively calling the BVH construction function for the left and right groups.</li>
+</ol>
+<p><img alt="BVH" loading="lazy" src="/post/computing-intersections/bvh.png"></p>
+<p>The above screenshot shows a BVH tree for a curved triangle, with the depth of each node visualized as the color
+of its bounding box. The core recursion for building the tree is strikingly simple:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">BVHNode</span><span class="o">&gt;</span> <span class="n">BVH</span><span class="o">::</span><span class="n">buildBVH</span><span class="p">(</span><span class="k">const</span> <span class="n">CurvedTriangle</span><span class="o">&amp;</span> <span class="n">triangle</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">SubTriangle</span><span class="o">&gt;&amp;</span> <span class="n">subTriangles</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">maxLeafSize</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">node</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">BVHNode</span><span class="o">&gt;</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Compute the bounding box for all sub-triangles
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">node</span><span class="o">-&gt;</span><span class="n">bbox</span> <span class="o">=</span> <span class="n">computeBoundingBox</span><span class="p">(</span><span class="n">triangle</span><span class="p">,</span> <span class="n">subTriangles</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">subTriangles</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">maxLeafSize</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Leaf node: store triangles and stop recursion
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">node</span><span class="o">-&gt;</span><span class="n">triangles</span> <span class="o">=</span> <span class="n">subTriangles</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Internal node: split and recurse
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">auto</span> <span class="p">[</span><span class="n">leftTriangles</span><span class="p">,</span> <span class="n">rightTriangles</span><span class="p">]</span> <span class="o">=</span> <span class="n">splitTriangles</span><span class="p">(</span><span class="n">triangle</span><span class="p">,</span> <span class="n">subTriangles</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">bbox</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">node</span><span class="o">-&gt;</span><span class="n">left</span> <span class="o">=</span> <span class="n">buildBVH</span><span class="p">(</span><span class="n">triangle</span><span class="p">,</span> <span class="n">leftTriangles</span><span class="p">,</span> <span class="n">maxLeafSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">node</span><span class="o">-&gt;</span><span class="n">right</span> <span class="o">=</span> <span class="n">buildBVH</span><span class="p">(</span><span class="n">triangle</span><span class="p">,</span> <span class="n">rightTriangles</span><span class="p">,</span> <span class="n">maxLeafSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">node</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Once we have the BVH tree, finding pairs of subtriangles whose bounding boxes may intersect is simple, and yet another recursion:
+given pointers <code>a</code> and <code>b</code> to BVH nodes, we terminate the recursion if <code>a-&gt;bbox</code> and <code>b-&gt;bbox</code> do not
+intersect. Otherwise, we recurse into the children of both nodes until we reach a situation where both pointers
+refer to leaf nodes; then, we add all pairs formed from triangles in <code>a</code> and triangles in <code>b</code> to the list of
+candidate intersection pairs.</p>
+<p>The BVH tree reduces the complexity of finding these candidate pairs from quadratic to \(\mathcal O(n \log n)\),
+where \(n\) is the number of subtriangles. That&rsquo;s almost linear and a huge gain. So after Step 2, we have:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">SubTriangle</span><span class="p">,</span> <span class="n">SubTriangle</span><span class="o">&gt;&gt;</span> <span class="n">potentialPairs</span><span class="p">;</span>
+</span></span></code></pre></div><h2 id="finding-true-intersection-pairs">Finding true intersection pairs<a hidden class="anchor" aria-hidden="true" href="#finding-true-intersection-pairs">#</a></h2>
+<p>Having obtained a list of pairs of subtriangles which may intersect each other according to their bounding boxes, we simply check
+each pair using a standard triangle-triangle intersection algorithm; I used an existing implementation of the
+<a href="https://raw.githubusercontent.com/erich666/jgt-code/master/Volume_08/Number_1/Guigue2003/tri_tri_intersect.c">Devillers-Guigue algorithm</a>.
+We ignore the curvature here since by construction, we found these subtriangles to be sufficiently flat.</p>
+<p>There is one wrinkle: triangles which neighbor each other in parameter space will always intersect because they share (parts of)
+an edge or a vertex; but they cannot have nontrivial intersections due to our flatness assumption.
+To avoid these spurious intersections, we discard pairs of triangles whose parameter-space bounding boxes intersect.</p>
+<p>As a result, we obtain the list of truly intersecting pairs of subtriangles:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C++" data-lang="C++"><span class="line"><span class="cl"><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">SubTriangle</span><span class="p">,</span> <span class="n">SubTriangle</span><span class="o">&gt;&gt;</span> <span class="n">intpairs</span><span class="p">;</span>
+</span></span></code></pre></div><p>If this list is nonempty, our original triangle does have self-inters ections.</p>
+<h2 id="summary">Summary<a hidden class="anchor" aria-hidden="true" href="#summary">#</a></h2>
+<p>Through the pipeline of</p>
+<p>  triangle subdivision ⟶ bounding box collision check ⟶ triangle intersection check,</p>
+<p>we can determine if a given curved triangle has self-intersections in a relatively efficient way.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://c-f-h.github.io/tags/math/">Math</a></li>
+      <li><a href="https://c-f-h.github.io/tags/c&#43;&#43;/">C&#43;&#43;</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://c-f-h.github.io/">cfh::blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
