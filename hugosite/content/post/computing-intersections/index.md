@@ -25,19 +25,21 @@ procedure, starting with the full triangle ``{(0,0), (1,0), (0,1)}``:
 <figure style="max-width:100px; margin-left:auto; margin-right:auto">
 
 ```goat
-+
-|\
-| \
-|  \
-+---+
-|\  |\
-| \ | \
-|  \|  \
-+---+---+
+    p2
+    +
+    |\
+    | \
+    |  \
+ m2 +---+ m1
+    |\  |\
+    | \ | \
+    |  \|  \
+ p0 +---+---+ p1
+        m0
 ```
 </figure>
 
-*A sketch of the subdivision scheme.*
+*A sketch of the subdivision scheme; p0, p1 and p2 are the original vertices, and m0, m1 and m2 are the inserted edge midpoints.*
 
 This results in a list of subtriangles, given by their three vertices in (u,v)-parameter space, that are
 considered flat enough and cover the entire original triangle.

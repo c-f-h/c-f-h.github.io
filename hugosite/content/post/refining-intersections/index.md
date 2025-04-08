@@ -30,7 +30,8 @@ We want to find a vector of parameters \(\mathbf{x} := (u_1, v_1, u_2, v_2)^T\) 
 \]
 
 Unlike in a classical application of Newton's method, here the input is four-dimensional, but the output is only three-dimensional.
-In other words, our problem is underdetermined. In geometric terms, this simply means that in general the intersection is not a point, but a curve!
+In other words, we have four unknowns, but only three equations---our problem is underdetermined.
+In geometric terms, this simply means that in general the intersection is not a point, but a curve!
 That's fine for us, though---for now we are only interested in finding any point that lies exactly on that intersection curve.
 
 A standard approach for underdetermined problems is to treat it as a least-squares problem, i.e., minimize the squared residual \(\|\mathbf{r}(\mathbf{x})\|^2\);
@@ -53,12 +54,13 @@ where the update step \(\Delta \mathbf{x}_k\) is the solution to the linear syst
 \]
 (This is the only difference to the standard Newton's method---it would solve \( J \Delta \mathbf x=-\mathbf r \), but since that is underdetermined,
 Gauss-Newton solves the [linear least squares](https://en.wikipedia.org/wiki/Linear_least_squares) version of that instead.)
+The iteration is stopped once \(\|\mathbf{r}(\mathbf{x})\|\) , the distance between the points, falls below a threshold, say \(10^{-9}\).
 
-The Jacobian matrix \(\mathbf{J}(\mathbf{x})\) can easily be written in terms of the Jacobian of the curved triangle map
+The Jacobian matrix \(J(\mathbf{x})\) can easily be written in terms of the Jacobian of the curved triangle map
 \( \nabla T(u, v) \in \mathbb R^{3 \times 2} \) as
 
 \[
-  \mathbf{J}(\mathbf{x}) = \frac{\partial \mathbf{r}}{\partial \mathbf{x}} =
+  J(\mathbf{x}) = \frac{\partial \mathbf{r}}{\partial \mathbf{x}} =
   \begin{bmatrix}
     \nabla T(u_1, v_1)  &  -\nabla T(u_2, v_2)
   \end{bmatrix}.
@@ -97,7 +99,8 @@ Now we have all the pieces in place and can implement the Gauss-Newton method to
 
 2. **Solving the linear system:** Directly inverting \(J^T J\) can be numerically unstable if the matrix is ill-conditioned
    (e.g., if the tangent planes at the two points are nearly parallel).
-   It's a better idea to use a stable method like SVD to solve this system. We'll see a second benefit of this approach in the next section.
+   It's a better idea to use a stable method like SVD (Singular Value Decomposition) to solve this system.
+   We'll see a second benefit of this approach in the next section.
 
 3. **Parameter domain constraints:** The parameters \((u, v)\) have to satisfy \(u \ge 0, v \ge 0, u+v \le 1\).
    If an update step takes a parameter outside this domain, we have to project them back into the parameter space triangle.
