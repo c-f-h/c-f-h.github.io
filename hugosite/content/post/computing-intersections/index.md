@@ -22,20 +22,24 @@ procedure, starting with the full triangle ``{(0,0), (1,0), (0,1)}``:
 2. Otherwise, split the triangle into four child triangles by connecting the three edge midpoints to each other
    and recurse into each of them.
 
-<figure style="width:75px; margin-left:auto; margin-right:auto">
+<figure style="max-width:100px; margin-left:auto; margin-right:auto">
 
 ```goat
 +
 |\
-+-+
-|\|\
-+-+-+
+| \
+|  \
++---+
+|\  |\
+| \ | \
+|  \|  \
++---+---+
 ```
 </figure>
 
 *A sketch of the subdivision scheme.*
 
-This results in a list of subtriangles, given by their three vertices in (u,v)-coordinate space, that are
+This results in a list of subtriangles, given by their three vertices in (u,v)-parameter space, that are
 considered flat enough and cover the entire original triangle.
 
 To check if a triangle is "flat enough", we can compute the normal distance of its curved edge midpoints
@@ -133,7 +137,7 @@ As a result, we obtain the list of truly intersecting pairs of subtriangles:
 std::vector<std::pair<SubTriangle, SubTriangle>> intpairs;
 ```
 
-If this list is nonempty, our original triangle does have self-inters ections.
+If this list is nonempty, our original triangle does have self-intersections.
 
 ## Summary
 
