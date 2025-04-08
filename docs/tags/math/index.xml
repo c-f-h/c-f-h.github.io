@@ -6,8 +6,20 @@
     <description>Recent content in Math on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 07 Apr 2025 17:52:07 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 08 Apr 2025 08:33:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/math/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Getting Accurate Intersections with Gauss-Newton</title>
+      <link>https://c-f-h.github.io/post/refining-intersections/</link>
+      <pubDate>Tue, 08 Apr 2025 08:33:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/refining-intersections/</guid>
+      <description>&lt;p&gt;In the &lt;a href=&#34;https://c-f-h.github.io/post/computing-intersections/&#34;&gt;last post&lt;/a&gt;, we found pairs of subtriangles of our
+&lt;a href=&#34;https://c-f-h.github.io/post/the-triangle-problem/&#34;&gt;curved triangle&lt;/a&gt; which intersect.
+The subtriangles were linear approximations, which means that the intersection points we found are also only approximate.
+This might be good enough for our purposes, but in the interest of getting training data that&amp;rsquo;s as accurate as possible, we will
+refine these intersections by projecting them onto the exact curved triangle.&lt;/p&gt;
+&lt;p&gt;To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) and \((u_2, v_2)\) within the triangle&amp;rsquo;s domain such that their mappings coincide,&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Computing Self-Intersections, the Geometric Way</title>
       <link>https://c-f-h.github.io/post/computing-intersections/</link>

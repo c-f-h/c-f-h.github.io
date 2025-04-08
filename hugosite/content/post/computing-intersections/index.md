@@ -146,3 +146,6 @@ Through the pipeline of
 &nbsp; triangle subdivision &LongRightArrow; bounding box collision check &LongRightArrow; triangle intersection check,
 
 we can determine if a given curved triangle has self-intersections in a relatively efficient way.
+
+Next up: confirming our intersections and [making them more accurate]({{< relref refining-intersections >}})
+through the power of Gauss-Newton.
