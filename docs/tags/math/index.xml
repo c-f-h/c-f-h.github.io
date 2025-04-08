@@ -46,7 +46,8 @@ procedure, starting with the full triangle &lt;code&gt;{(0,0), (1,0), (0,1)}&lt;
 We are given a curved triangle in 3D space.
 It&amp;rsquo;s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges.
 These coefficients are interpreted as control points of a quadratic triangular Bezier surface.
-Mathematically speaking, we map parameters \((u,v)\) with \( 0 \le u, v;\ u+v \le 1\) to&lt;/p&gt;</description>
+Such representations are commonly used in CAD systems to represent curved surfaces.
+Mathematically speaking, we map parameters \((u,v)\) which lie in the parameter-space triangle \( 0 \le u, v;\ u+v \le 1\) to&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>

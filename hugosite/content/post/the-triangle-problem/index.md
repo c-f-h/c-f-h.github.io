@@ -9,7 +9,8 @@ As the starting point for a little machine learning project, I chose the followi
 We are given a curved triangle in 3D space.
 It's specified via its three vertices plus three additional vector-valued coefficients associated to its three edges.
 These coefficients are interpreted as control points of a quadratic triangular Bezier surface.
-Mathematically speaking, we map parameters \((u,v)\) with \( 0 \le u, v;\ u+v \le 1\) to
+Such representations are commonly used in CAD systems to represent curved surfaces.
+Mathematically speaking, we map parameters \((u,v)\) which lie in the parameter-space triangle \( 0 \le u, v;\ u+v \le 1\) to
 
 \[
 T(u,v) = P_{200} u^2 + P_{020} v^2 + P_{002} w^2 + P_{110} 2uv + P_{101} 2uw + P_{011} 2vw,
@@ -36,7 +37,7 @@ public:
     }
 	
     Eigen::Vector3d P200, P020, P002, P110, P101, P011;
-}
+};
 ```
 
 Now unlike linear triangles, it's possible for these curved triangles to have self-intersections, that is,
