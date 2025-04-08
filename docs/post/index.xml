@@ -14,7 +14,7 @@
       <pubDate>Mon, 07 Apr 2025 17:52:07 +0200</pubDate>
       <guid>https://c-f-h.github.io/post/computing-intersections/</guid>
       <description>&lt;p&gt;Before we can apply ML to the &lt;a href=&#34;https://c-f-h.github.io/post/the-triangle-problem/&#34;&gt;triangle problem&lt;/a&gt;, we need to be able to
-compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.&lt;/p&gt;
+compute self-intersections of a curved triangle in an accurate and efficient way so that we can generate enough training data.&lt;/p&gt;
 &lt;p&gt;The basic approach is:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&#34;#subdividing-the-triangle&#34;&gt;Subdivide&lt;/a&gt; the curved triangle into smaller subtriangles&lt;/li&gt;

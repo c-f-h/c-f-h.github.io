@@ -53,10 +53,11 @@ The question is simple: given the six vectors determining the triangle, can we f
 
 ## The approach
 
-First up we determine [an algorithmic way]({{<relref computing-intersections>}}), using some computational geometry,
+First up we [develop an algorithm]({{<relref computing-intersections>}}), using some computational geometry,
 to check for self-intersections. Once that is done, we can generate as
 much input data as we like for an ML approach and see if we can come up with a good model.
 
 Although both inputs (a couple of floats) and output (just a binary classifier) for this problem are simple,
-the problem isn't trivial: the function we are trying to learn is highly nonlinear and discontinuous.
-So it should serve as an interesting test case for learning about ML techniques.
+the problem isn't trivial: the decision boundary we are trying to learn is highly nonlinear.
+So it should serve as an interesting test case for learning about ML techniques while still being
+quick to experiment on using commodity hardware.

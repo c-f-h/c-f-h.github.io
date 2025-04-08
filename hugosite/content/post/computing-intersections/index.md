@@ -6,7 +6,7 @@ categories: ["The Triangle Project"]
 ---
 
 Before we can apply ML to the [triangle problem]({{< relref the-triangle-problem >}}), we need to be able to
-compute self-intersections of a curved triangle in an accurate and hopefully efficient way so that we can generate enough training data.
+compute self-intersections of a curved triangle in an accurate and efficient way so that we can generate enough training data.
 
 The basic approach is:
 1. [Subdivide](#subdividing-the-triangle) the curved triangle into smaller subtriangles
@@ -56,8 +56,8 @@ std::vector<SubTriangle> subTriangles;              // List of all subtriangles
 ```
 
 However, checking all pairs of subtriangles against each other is too expensive (\(\mathcal O(n^2)\), with
-``n = subTriangles.size()`` routinely in the thousands or tens of thousands), even if first doing
-a cheaper bounding box check. We need a spatial datastructure to speed it up.
+``n = subTriangles.size()`` routinely in the thousands or tens of thousands), even when preceded by
+a cheaper bounding box check. We need a spatial data structure to speed it up.
 
 
 ## Finding candidate pairs using a Bounding Volume Hierarchy (BVH)
