@@ -6,8 +6,22 @@
     <description>Recent content in C&#43;&#43; on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 08 Apr 2025 08:33:00 +0200</lastBuildDate>
+    <lastBuildDate>Wed, 09 Apr 2025 20:57:38 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/c++/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Preparing the Data</title>
+      <link>https://c-f-h.github.io/post/preparing-the-data/</link>
+      <pubDate>Wed, 09 Apr 2025 20:57:38 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/preparing-the-data/</guid>
+      <description>&lt;p&gt;With the &lt;a href=&#34;https://c-f-h.github.io/post/refining-intersections/&#34;&gt;triangle self-intersection algorithm&lt;/a&gt; ready to go, we
+can start gathering the training data for our machine learning setup. But first we have to think about how
+exactly we want to represent it.&lt;/p&gt;
+&lt;h2 id=&#34;canonical-triangles&#34;&gt;Canonical triangles&lt;/h2&gt;
+&lt;p&gt;The &lt;a href=&#34;https://c-f-h.github.io/post/the-triangle-problem/&#34;&gt;curved triangles&lt;/a&gt; we work with are specified by six 3D vectors, so that
+would mean 18 floating point numbers as our input data.
+But an important insight is that whether a triangle intersects itself doesn&amp;rsquo;t change when we rotate it, translate it,
+or uniformly scale it&amp;mdash;it&amp;rsquo;s well known that affine transformations of spline control points result in affine transformations of the surface itself.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Getting Accurate Intersections with Gauss-Newton</title>
       <link>https://c-f-h.github.io/post/refining-intersections/</link>

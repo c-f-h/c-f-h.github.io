@@ -153,6 +153,20 @@
 
 <article class="first-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Preparing the Data
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>With the triangle self-intersection algorithm ready to go, we can start gathering the training data for our machine learning setup. But first we have to think about how exactly we want to represent it.
+Canonical triangles The curved triangles we work with are specified by six 3D vectors, so that would mean 18 floating point numbers as our input data. But an important insight is that whether a triangle intersects itself doesn’t change when we rotate it, translate it, or uniformly scale it—it’s well known that affine transformations of spline control points result in affine transformations of the surface itself.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-04-09 20:57:38 +0200 CEST'>April 9, 2025</span></footer>
+  <a class="entry-link" aria-label="post link to Preparing the Data" href="https://c-f-h.github.io/post/preparing-the-data/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Getting Accurate Intersections with Gauss-Newton
     </h2>
   </header>
