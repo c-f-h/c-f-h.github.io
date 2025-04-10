@@ -1,5 +1,5 @@
 ---
-title: 'The curved triangle problem'
+title: 'The Curved Triangle Problem'
 date: 2025-04-06T21:06:14+02:00
 tags: ['Math']
 categories: ["The Triangle Project"]

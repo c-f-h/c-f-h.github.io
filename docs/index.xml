@@ -52,7 +52,7 @@ compute self-intersections of a curved triangle in an accurate and efficient way
 procedure, starting with the full triangle &lt;code&gt;{(0,0), (1,0), (0,1)}&lt;/code&gt;:&lt;/p&gt;</description>
     </item>
     <item>
-      <title>The curved triangle problem</title>
+      <title>The Curved Triangle Problem</title>
       <link>https://c-f-h.github.io/post/the-triangle-problem/</link>
       <pubDate>Sun, 06 Apr 2025 21:06:14 +0200</pubDate>
       <guid>https://c-f-h.github.io/post/the-triangle-problem/</guid>
