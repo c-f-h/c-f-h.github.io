@@ -1,6 +1,7 @@
 svg.diagram {
   display: block;
   margin: auto;
+  font-size: 0.75em; /* avoid overlapping letters */
 }
 
 figure > figcaption > p {

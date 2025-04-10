@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Posts | cfh::blog</title>
+<title>Python | cfh::blog</title>
 <meta name="keywords" content="">
-<meta name="description" content="Posts - cfh::blog">
+<meta name="description" content="">
 <meta name="author" content="">
-<link rel="canonical" href="https://c-f-h.github.io/post/">
+<link rel="canonical" href="https://c-f-h.github.io/tags/python/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
@@ -18,8 +18,8 @@
 <link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://c-f-h.github.io/post/index.xml">
-<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/">
+<link rel="alternate" type="application/rss+xml" href="https://c-f-h.github.io/tags/python/index.xml">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/tags/python/">
 <noscript>
     <style>
         #theme-toggle,
@@ -71,30 +71,15 @@
   };
 </script>
   
-</head><meta property="og:url" content="https://c-f-h.github.io/post/">
+</head><meta property="og:url" content="https://c-f-h.github.io/tags/python/">
   <meta property="og:site_name" content="cfh::blog">
-  <meta property="og:title" content="Posts">
+  <meta property="og:title" content="Python">
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Posts">
+<meta name="twitter:title" content="Python">
 <meta name="twitter:description" content="">
 
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position":  1 ,
-      "name": "Posts",
-      "item": "https://c-f-h.github.io/post/"
-    }
-  ]
-}
-</script>
 </head>
 
 <body class="list" id="top">
@@ -153,11 +138,11 @@
 <main class="main"> 
 <header class="page-header">
   <h1>
-    Posts
+    Python
   </h1>
 </header>
 
-<article class="post-entry"> 
+<article class="post-entry tag-entry"> 
   <header class="entry-header">
     <h2 class="entry-hint-parent">Training the First Model
     </h2>
@@ -170,62 +155,6 @@ import numpy as np import torch from torch.utils.data import Dataset, DataLoader
   </div>
   <footer class="entry-footer"><span title='2025-04-10 20:29:11 +0200 CEST'>April 10, 2025</span></footer>
   <a class="entry-link" aria-label="post link to Training the First Model" href="https://c-f-h.github.io/post/training-the-first-model/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Preparing the Data
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>With the triangle self-intersection algorithm ready to go, we can start gathering the training data for our machine learning setup. But first we have to think about how exactly we want to represent it.
-Canonical triangles The curved triangles we work with are specified by six 3D vectors, so that would mean 18 floating point numbers as our input data. But an important insight is that whether a triangle intersects itself doesn’t change when we rotate it, translate it, or uniformly scale it—it’s well known that affine transformations of spline control points result in affine transformations of the surface itself.
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-09 20:57:38 +0200 CEST'>April 9, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Preparing the Data" href="https://c-f-h.github.io/post/preparing-the-data/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Getting Accurate Intersections with Gauss-Newton
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>In the last post, we found pairs of subtriangles of our curved triangle which intersect. The subtriangles were linear approximations, which means that the intersection points we found are also only approximate. This might be good enough for our purposes, but in the interest of getting training data that’s as accurate as possible, we will refine these intersections by projecting them onto the exact curved triangle.
-To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) and \((u_2, v_2)\) within the triangle’s domain such that their mappings coincide,
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-08 08:33:00 +0200 CEST'>April 8, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Getting Accurate Intersections with Gauss-Newton" href="https://c-f-h.github.io/post/refining-intersections/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Computing Self-Intersections, the Geometric Way
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Before we can apply ML to the triangle problem, we need to be able to compute self-intersections of a curved triangle in an accurate and efficient way so that we can generate enough training data.
-The basic approach is:
-Subdivide the curved triangle into smaller subtriangles Find potentially intersecting pairs of subtriangles Check for actual intersections among these candidate pairs Subdividing the triangle We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-07 17:52:07 +0200 CEST'>April 7, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Computing Self-Intersections, the Geometric Way" href="https://c-f-h.github.io/post/computing-intersections/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">The Curved Triangle Problem
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>As the starting point for a little machine learning project, I chose the following geometric problem. We are given a curved triangle in 3D space. It’s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges. These coefficients are interpreted as control points of a quadratic triangular Bezier surface. Such representations are commonly used in CAD systems to represent curved surfaces. Mathematically speaking, we map parameters \((u,v)\) which lie in the parameter-space triangle \( 0 \le u, v;\ u&#43;v \le 1\) to
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-06 21:06:14 +0200 CEST'>April 6, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to The Curved Triangle Problem" href="https://c-f-h.github.io/post/the-triangle-problem/"></a>
 </article>
     </main>
     
