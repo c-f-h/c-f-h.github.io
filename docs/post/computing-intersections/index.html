@@ -20,7 +20,7 @@ We split the original triangle into a list of sufficiently flat subtriangles by 
 procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:">
 <meta name="author" content="">
 <link rel="canonical" href="https://c-f-h.github.io/post/computing-intersections/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.62635b83e7d7c9587b6556c4a5fce37e693f6142ada1c778253a0f6b64b48c31.css" integrity="sha256-YmNbg&#43;fXyVh7ZVbEpfzjfmk/YUKtocd4JToPa2S0jDE=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
@@ -240,18 +240,13 @@ procedure, starting with the full triangle <code>{(0,0), (1,0), (0,1)}</code>:</
 <li>Otherwise, split the triangle into four child triangles by connecting the three edge midpoints to each other
 and recurse into each of them.</li>
 </ol>
-<figure style="max-width:100px; margin-left:auto; margin-right:auto">
 
 
 
-<div class="goat svg-container ">
+
+<figure id="diagram-1">
   
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      font-family="Menlo,Lucida Console,monospace"
-      
-        viewBox="0 0 136 185"
-      >
+    <svg class="diagram" width="136" height="185"  xmlns="http://www.w3.org/2000/svg" version="1.1">
       <g transform='translate(8,16)'>
 <path d='M 32,80 L 64,80' fill='none' stroke='currentColor'></path>
 <path d='M 32,144 L 64,144' fill='none' stroke='currentColor'></path>
@@ -278,10 +273,8 @@ and recurse into each of them.</li>
 
     </svg>
   
-</div>
-</figure>
-<p><em>A sketch of the subdivision scheme; p0, p1 and p2 are the original vertices, and m0, m1 and m2 are the inserted edge midpoints.</em></p>
-<p>This results in a list of subtriangles, given by their three vertices in (u,v)-parameter space, that are
+  <figcaption><p>A sketch of the subdivision scheme; p0, p1 and p2 are the original vertices, and m0, m1 and m2 are the inserted edge midpoints.</p></figcaption>
+</figure><p>This results in a list of subtriangles, given by their three vertices in (u,v)-parameter space, that are
 considered flat enough and cover the entire original triangle.</p>
 <p>To check if a triangle is &ldquo;flat enough&rdquo;, we can compute the normal distance of its curved edge midpoints
 from the plane defined by its three vertices and compare it to a threshold. It&rsquo;s also a good idea to compute the

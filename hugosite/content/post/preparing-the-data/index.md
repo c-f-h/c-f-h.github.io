@@ -90,9 +90,7 @@ Both the \((u_1,v_1)\) and the \((u_2,v_2)\) components are rasterized into the 
 The rasterization is implemented by linearly interpolating between each pair of curve points and mapping into
 the discretized (u,v)-space.
 
-<figure style="max-width:200px; margin-left:auto; margin-right:auto">
-
-```goat
+```goat {caption="A 16x16 bitmap showing the location of an intersection curve in parameter space. The upper right half is always empty, but for simplicity we store it anyway."}
 o
 o o 
 o o o
@@ -110,10 +108,6 @@ o o o o o o o o o o o o o o
 o o o o o o o o o o o o o o o
 o o o o o o o o o o o o o o o o
 ```
-</figure>
-
-*A 16x16 bitmap showing the location of an intersection curve in parameter space. The upper right half is always empty,
-but for simplicity we store it anyway.*
 
 Since each pixel is either 0 or 1, we can compress the 256 pixels of such a bitmap into 32 bytes.
 To convert this to a single 0/1 label, we simply check if the entire bitmap is 0 or there are any pixels lit.

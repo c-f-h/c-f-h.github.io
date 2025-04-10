@@ -1,0 +1,8 @@
+svg.diagram {
+  display: block;
+  margin: auto;
+}
+
+figure > figcaption > p {
+  margin: 8px 16px;
+}

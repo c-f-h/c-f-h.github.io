@@ -22,9 +22,7 @@ procedure, starting with the full triangle ``{(0,0), (1,0), (0,1)}``:
 2. Otherwise, split the triangle into four child triangles by connecting the three edge midpoints to each other
    and recurse into each of them.
 
-<figure style="max-width:100px; margin-left:auto; margin-right:auto">
-
-```goat
+```goat {width="300" caption="A sketch of the subdivision scheme; p0, p1 and p2 are the original vertices, and m0, m1 and m2 are the inserted edge midpoints."}
     p2
     +
     |\
@@ -37,9 +35,6 @@ procedure, starting with the full triangle ``{(0,0), (1,0), (0,1)}``:
  p0 +---+---+ p1
         m0
 ```
-</figure>
-
-*A sketch of the subdivision scheme; p0, p1 and p2 are the original vertices, and m0, m1 and m2 are the inserted edge midpoints.*
 
 This results in a list of subtriangles, given by their three vertices in (u,v)-parameter space, that are
 considered flat enough and cover the entire original triangle.
