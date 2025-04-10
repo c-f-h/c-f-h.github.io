@@ -116,7 +116,7 @@ def simple_mlp_model(inputdim, numlayers, numneurons, dropout_rate):
             nn.Dropout(p=dropout_rate),
         ]
     layers += [
-        nn.Linear(numneurons, 1, bias=False),
+        nn.Linear(numneurons, 1),
         nn.Sigmoid()
     ]
     return nn.Sequential(*layers)
@@ -143,15 +143,15 @@ Here's the plot of training and validation loss over the entire training run:
 
 We use a simple kind of early stopping here based on keeping the model with the best validation accuracy and stopping
 if no improvements were made in the last 50 epochs.
-The best validation accuracy is achieved at epoch 153, with **95.19% accuracy** on the validation set and a validation
-loss of 0.1188. That's a pretty nice result for a first run! Granted, I chose these hyperparameters not randomly,
-but based on experience from some first experimental runs, so they already yield decent results.
+The best validation accuracy is achieved at epoch 188, with **95.44% accuracy** on the validation set and a validation
+loss of 0.1149. That's pretty nice for a first run! Granted, I chose these hyperparameters not randomly,
+but based on experience from some earlier experimental runs, so they already yield decent results.
 
 The model is already overfitting here, but the validation loss isn't suffering dramatically from it yet. We could try
 increasing the dropout rate or introducing some other kind of regularization, but we'll get into a slightly more principled
 hyperparameter search later on.
 
-Also note that the red dot marks the lowest validation loss, 0.1178, which happens earlier (epoch 127)
-but has a slightly lower accuracy of 94.99%.
+Also note that the red dot marks the lowest validation loss, 0.1139, which happens earlier (epoch 111)
+but has a slightly lower accuracy of 95.12%.
 
 This looks like a great starting point, and we will tweak various aspects of our setup from here on out.
