@@ -7,8 +7,8 @@
 <meta name="robots" content="index, follow">
 <title>PyTorch | cfh::blog</title>
 <meta name="keywords" content="">
-<meta name="description" content="">
-<meta name="author" content="">
+<meta name="description" content="Notes on personal projects">
+<meta name="author" content="cfh">
 <link rel="canonical" href="https://c-f-h.github.io/tags/pytorch/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
@@ -74,11 +74,12 @@
 </head><meta property="og:url" content="https://c-f-h.github.io/tags/pytorch/">
   <meta property="og:site_name" content="cfh::blog">
   <meta property="og:title" content="PyTorch">
+  <meta property="og:description" content="Notes on personal projects">
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="PyTorch">
-<meta name="twitter:description" content="">
+<meta name="twitter:description" content="Notes on personal projects">
 
 </head>
 
@@ -97,7 +98,7 @@
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <a href="https://c-f-h.github.io/" accesskey="h" title="Home (Alt + H)">Home</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -136,7 +137,7 @@
     </nav>
 </header>
 <main class="main"> 
-<header class="page-header">
+<header class="page-header"><div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/tags/">Tags</a></div>
   <h1>
     PyTorch
   </h1>
@@ -153,7 +154,7 @@ Loading the data Since the binary file format we chose was so simple, it’s rat
 import numpy as np import torch from torch.utils.data import Dataset, DataLoader, Subset class BinaryBezierDataset(Dataset): &#34;&#34;&#34; Loads Bezier triangle data from a binary file into memory once. Each record: 11 float32 coords, 32 uint8 bytes (packed 16x16 bitmap). &#34;&#34;&#34; def __init__(self, filename, device, input_dim=11): super().__init__() self.filename = filename self.input_dim = input_dim coords_bytes = input_dim * np.dtype(np.float32).itemsize # 44 record_bytes = coords_bytes &#43; 32 # 76 (coords &#43; 16x16 bitmap = 256 bits) # Calculate number of samples from file size file_size = os.path.getsize(filename) if file_size % record_bytes != 0: raise ValueError(f&#34;File size {file_size} not multiple of record size {record_bytes}&#34;) self.num_samples = file_size // record_bytes print(f&#34;Found {self.num_samples} samples in {filename}.&#34;) with open(filename, &#39;rb&#39;) as f: data = np.fromfile(f, dtype=np.uint8, count=file_size) data = data.reshape(self.num_samples, record_bytes) # reshape into records # Extract coords (first 44 bytes = 11 floats) coords = data[:, :coords_bytes].view(np.float32).reshape(self.num_samples, self.input_dim) # Extract and unpack packed bitmaps (last 32 bytes) packed_bitmaps = data[:, coords_bytes:] unpacked_bits = np.unpackbits(packed_bitmaps, axis=1) # (num_samples, 256) # The actual label is the maximum (0 or 1) over the bitmap bits outputs = np.max(unpacked_bits, axis=1) # (num_samples,) # Convert to pytorch tensors and transfer to GPU if required self.x_tensor = torch.from_numpy(coords).float().to(device) # (num_samples, 11) self.y_tensor = torch.from_numpy(outputs).float().to(device) # (num_samples,) def __len__(self): return self.num_samples def __getitem__(self, idx): return self.x_tensor[idx], self.y_tensor[idx] So far, so good. We are in the convenient position that our entire dataset fits quite comfortably into RAM or VRAM, so we just load the entire dataset at once, extract the 11 triangle coordinates, unpack the bitmap and take its maximum to get a binary 0/1 label which tells us whether the triangle self-intersects. This is a pretty straightforward DataSet which we can load into a nn.DataLoader with the desired batch size and shuffling enabled to feed a standard PyTorch training loop. It’s actually not very efficient to use it like this, but we’ll get to that in a later post.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-10 20:29:11 +0200 CEST'>April 10, 2025</span></footer>
+  <footer class="entry-footer"><span title='2025-04-10 20:29:11 +0200 CEST'>April 10, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Training the First Model" href="https://c-f-h.github.io/post/training-the-first-model/"></a>
 </article>
     </main>

@@ -13,7 +13,7 @@ The subtriangles were linear approximations, which means that the intersection p
 This might be good enough for our purposes, but in the interest of getting training data that&rsquo;s as accurate as possible, we will
 refine these intersections by projecting them onto the exact curved triangle.
 To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) and \((u_2, v_2)\) within the triangle&rsquo;s domain such that their mappings coincide,">
-<meta name="author" content="">
+<meta name="author" content="cfh">
 <link rel="canonical" href="https://c-f-h.github.io/post/refining-intersections/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
@@ -132,6 +132,10 @@ To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) an
   "inLanguage": "en",
   "datePublished": "2025-04-08T08:33:00+02:00",
   "dateModified": "2025-04-08T08:33:00+02:00",
+  "author":{
+    "@type": "Person",
+    "name": "cfh"
+  },
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "https://c-f-h.github.io/post/refining-intersections/"
@@ -163,7 +167,7 @@ To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) an
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <a href="https://c-f-h.github.io/" accesskey="h" title="Home (Alt + H)">Home</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -205,11 +209,11 @@ To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) an
 
 <article class="post-single">
   <header class="post-header">
-    
+    <div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/post/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Getting Accurate Intersections with Gauss-Newton
     </h1>
-    <div class="post-meta"><span title='2025-04-08 08:33:00 +0200 CEST'>April 8, 2025</span>
+    <div class="post-meta"><span title='2025-04-08 08:33:00 +0200 CEST'>April 8, 2025</span>&nbsp;·&nbsp;cfh
 
 </div>
   </header> 
@@ -331,6 +335,19 @@ We even saw that we can use an extension of this idea to trace out the entire cu
       <li><a href="https://c-f-h.github.io/tags/math/">Math</a></li>
       <li><a href="https://c-f-h.github.io/tags/c&#43;&#43;/">C&#43;&#43;</a></li>
     </ul>
+<nav class="paginav">
+  <a class="prev" href="https://c-f-h.github.io/post/preparing-the-data/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Preparing the Data</span>
+  </a>
+  <a class="next" href="https://c-f-h.github.io/post/computing-intersections/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Computing Self-Intersections, the Geometric Way</span>
+  </a>
+</nav>
+
   </footer>
 </article>
     </main>
