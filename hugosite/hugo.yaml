@@ -44,9 +44,6 @@ params:
   #  # disableFingerprinting: true
   #  safari_pinned_tab: "<link / abs url>"
 
-  label:
-    text: "Home"
-
   socialIcons:
     - name: github
       url: "https://github.com/c-f-h/"

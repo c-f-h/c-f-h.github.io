@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>PyTorch | cfh::blog</title>
+<title>Connect-Zero | cfh::blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="Notes on personal projects">
 <meta name="author" content="cfh">
-<link rel="canonical" href="https://c-f-h.github.io/tags/pytorch/">
+<link rel="canonical" href="https://c-f-h.github.io/categories/connect-zero/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
@@ -18,8 +18,8 @@
 <link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://c-f-h.github.io/tags/pytorch/index.xml">
-<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/tags/pytorch/">
+<link rel="alternate" type="application/rss+xml" href="https://c-f-h.github.io/categories/connect-zero/index.xml">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/categories/connect-zero/">
 <noscript>
     <style>
         #theme-toggle,
@@ -73,14 +73,14 @@
   
   
   
-</head><meta property="og:url" content="https://c-f-h.github.io/tags/pytorch/">
+</head><meta property="og:url" content="https://c-f-h.github.io/categories/connect-zero/">
   <meta property="og:site_name" content="cfh::blog">
-  <meta property="og:title" content="PyTorch">
+  <meta property="og:title" content="Connect-Zero">
   <meta property="og:description" content="Notes on personal projects">
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="PyTorch">
+<meta name="twitter:title" content="Connect-Zero">
 <meta name="twitter:description" content="Notes on personal projects">
 
 </head>
@@ -139,25 +139,23 @@
     </nav>
 </header>
 <main class="main"> 
-<header class="page-header"><div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/tags/">Tags</a></div>
+<header class="page-header"><div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/categories/">Categories</a></div>
   <h1>
-    PyTorch
+    Connect-Zero
   </h1>
 </header>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">Training the First Model
+    <h2 class="entry-hint-parent">Connect 4
     </h2>
   </header>
   <div class="entry-content">
-    <p>Now that we have plenty of training data, we can load it into PyTorch and start training a model.
-Loading the data Since the binary file format we chose was so simple, it’s rather straightforward to write a Dataset class which reads it in:
-import numpy as np import torch from torch.utils.data import Dataset, DataLoader, Subset class BinaryBezierDataset(Dataset): &#34;&#34;&#34; Loads Bezier triangle data from a binary file into memory once. Each record: 11 float32 coords, 32 uint8 bytes (packed 16x16 bitmap). &#34;&#34;&#34; def __init__(self, filename, device, input_dim=11): super().__init__() self.filename = filename self.input_dim = input_dim coords_bytes = input_dim * np.dtype(np.float32).itemsize # 44 record_bytes = coords_bytes &#43; 32 # 76 (coords &#43; 16x16 bitmap = 256 bits) # Calculate number of samples from file size file_size = os.path.getsize(filename) if file_size % record_bytes != 0: raise ValueError(f&#34;File size {file_size} not multiple of record size {record_bytes}&#34;) self.num_samples = file_size // record_bytes print(f&#34;Found {self.num_samples} samples in {filename}.&#34;) with open(filename, &#39;rb&#39;) as f: data = np.fromfile(f, dtype=np.uint8, count=file_size) data = data.reshape(self.num_samples, record_bytes) # reshape into records # Extract coords (first 44 bytes = 11 floats) coords = data[:, :coords_bytes].view(np.float32).reshape(self.num_samples, self.input_dim) # Extract and unpack packed bitmaps (last 32 bytes) packed_bitmaps = data[:, coords_bytes:] unpacked_bits = np.unpackbits(packed_bitmaps, axis=1) # (num_samples, 256) # The actual label is the maximum (0 or 1) over the bitmap bits outputs = np.max(unpacked_bits, axis=1) # (num_samples,) # Convert to pytorch tensors and transfer to GPU if required self.x_tensor = torch.from_numpy(coords).float().to(device) # (num_samples, 11) self.y_tensor = torch.from_numpy(outputs).float().to(device) # (num_samples,) def __len__(self): return self.num_samples def __getitem__(self, idx): return self.x_tensor[idx], self.y_tensor[idx] So far, so good. We are in the convenient position that our entire dataset fits quite comfortably into RAM or VRAM, so we just load the entire dataset at once, extract the 11 triangle coordinates, unpack the bitmap and take its maximum to get a binary 0/1 label which tells us whether the triangle self-intersects. This is a pretty straightforward DataSet which we can load into a nn.DataLoader with the desired batch size and shuffling enabled to feed a standard PyTorch training loop. It’s actually not very efficient to use it like this, but we’ll get to that in a later post.
-...</p>
+    <p> The computer opponent is a neural network trained using reinforcement learning. Details are forthcoming.
+</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-10 20:29:11 +0200 CEST'>April 10, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Training the First Model" href="https://c-f-h.github.io/post/training-the-first-model/"></a>
+  <footer class="entry-footer"><span title='2025-04-20 09:29:36 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to Connect 4" href="https://c-f-h.github.io/post/connect-4/"></a>
 </article>
     </main>
     

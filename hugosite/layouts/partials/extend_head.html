@@ -2,4 +2,11 @@
   {{ if .Param "math" }}
     {{ partialCached "math.html" . }}
   {{ end }}
+  {{ if .Param "connect4" }}
+  <link rel="stylesheet" href="/connect4/connect4-game.css">
+  <script src="/connect4/connect4-game.js"></script>
+  {{ end }}
+  {{ if .Param "onnx" }}
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+  {{ end }}
 </head>

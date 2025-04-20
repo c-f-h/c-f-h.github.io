@@ -6,8 +6,20 @@
     <description>Recent content on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 10 Apr 2025 20:29:11 +0200</lastBuildDate>
+    <lastBuildDate>Sun, 20 Apr 2025 09:29:36 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Connect 4</title>
+      <link>https://c-f-h.github.io/post/connect-4/</link>
+      <pubDate>Sun, 20 Apr 2025 09:29:36 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/connect-4/</guid>
+      <description>&lt;div id=&#34;game-container1&#34; class=&#34;connect4-container&#34;
+    data-human=&#34;1&#34; data-cpu=&#34;2&#34;
+    data-random-first-player=&#34;true&#34;
+    data-onnx-model=&#34;export.onnx&#34;
+&gt;&lt;/div&gt;
+&lt;p&gt;The computer opponent is a neural network trained using reinforcement learning. Details are forthcoming.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Training the First Model</title>
       <link>https://c-f-h.github.io/post/training-the-first-model/</link>
