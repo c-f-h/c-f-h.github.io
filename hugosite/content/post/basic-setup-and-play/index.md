@@ -1,6 +1,6 @@
 ---
 title: 'Basic Setup and Play'
-date: 2025-04-20T13:12:41+02:00
+date: 2025-04-20T15:35:41+02:00
 tags: ['Python', 'PyTorch']
 categories: ['Connect-Zero']
 ---
@@ -97,6 +97,8 @@ as well as a flag indicating whether the move resulted in a win.
 It's pretty straightforward but a bit tedious to
 write because of the various directions you have to check for a winning row,
 so I'm not reproducing it here, but you can check it out in the repo.
+
+With that, we have everything to write a complete game loop:
 
 ```py
 def play(model1, model2):

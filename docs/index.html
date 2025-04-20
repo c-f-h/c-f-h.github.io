@@ -175,6 +175,20 @@ all my own.</p>
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">The REINFORCE Algorithm
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Let’s say we have a Connect 4-playing model and we let it play a couple of games. (We haven’t really talked about model architecture until now, so for now just imagine a simple multilayer perceptron with a few hidden layers which outputs 7 raw logits, as discussed in the previous post.)
+As it goes in life, our model wins some and loses some. How do we make it actually learn from its experiences? How does the magic happen?
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-04-20 20:29:21 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to The REINFORCE Algorithm" href="https://c-f-h.github.io/post/the-reinforce-algorithm/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Basic Setup and Play
     </h2>
   </header>
@@ -184,7 +198,7 @@ import torch import torch.nn as nn import torch.nn.functional as F Board state T
 board = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE) The board is ordered such that board[0, :] is the top row. A non-empty cell is represented by &#43;1 or -1. To simplify things, we always represent the player whose move it currently is by &#43;1, and the opponent by -1. This way we don’t need any separate state to keep track of whose move it is. After a move has been made, we simply flip the board by doing
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-20 13:12:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-20 15:35:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Basic Setup and Play" href="https://c-f-h.github.io/post/basic-setup-and-play/"></a>
 </article>
 

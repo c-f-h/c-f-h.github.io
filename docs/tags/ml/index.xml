@@ -6,8 +6,21 @@
     <description>Recent content in ML on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 20 Apr 2025 13:12:41 +0200</lastBuildDate>
+    <lastBuildDate>Sun, 20 Apr 2025 20:29:21 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/ml/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>The REINFORCE Algorithm</title>
+      <link>https://c-f-h.github.io/post/the-reinforce-algorithm/</link>
+      <pubDate>Sun, 20 Apr 2025 20:29:21 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/the-reinforce-algorithm/</guid>
+      <description>&lt;p&gt;Let&amp;rsquo;s say we have a Connect 4-playing model and we let it
+&lt;a href=&#34;https://c-f-h.github.io/post/basic-setup-and-play/&#34;&gt;play a couple of games&lt;/a&gt;.
+(We haven&amp;rsquo;t really talked about model architecture until now, so for now just imagine a
+simple multilayer perceptron with a few hidden layers which outputs 7 raw logits,
+as discussed in the previous post.)&lt;/p&gt;
+&lt;p&gt;As it goes in life, our model wins some and loses some. How do we make it
+actually learn from its experiences? How does the magic happen?&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Connect-Zero: Reinforcement Learning from Scratch</title>
       <link>https://c-f-h.github.io/post/connect-zero/</link>
