@@ -30,7 +30,7 @@ class Connect4Game {
         gameContainer.innerHTML = `
             <div class="status"></div>
             <div class="game-layout">
-                <svg class="board" width="420" height="360"></svg>
+                <svg class="board" viewBox="0 0 420 360"></svg>
                 <div class="valuation-bar">
                     <div class="valuation-center-line"></div>
                     <div class="valuation-indicator"></div>

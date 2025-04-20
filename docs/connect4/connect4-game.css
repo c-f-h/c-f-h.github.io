@@ -35,6 +35,8 @@
 }
 .connect4-container .board {
     cursor: pointer;
+    width: 420px;
+    max-width: 90vw;
 }
 .connect4-container button {
     margin-top: 20px;
