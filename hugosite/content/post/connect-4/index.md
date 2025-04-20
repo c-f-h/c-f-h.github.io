@@ -13,4 +13,6 @@ onnx: true
     data-onnx-model="export.onnx"
 ></div>
 
-The computer opponent is a neural network trained using reinforcement learning. Details are forthcoming.
+The computer opponent is a neural network trained using reinforcement learning.
+It was exported to ONNX and now runs right here in your browser.
+See [Connect-Zero]({{<relref connect-zero>}}) and the follow-up posts for details.

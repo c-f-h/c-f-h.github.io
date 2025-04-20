@@ -6,8 +6,30 @@
     <description>Recent content in Python on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 10 Apr 2025 20:29:11 +0200</lastBuildDate>
+    <lastBuildDate>Sun, 20 Apr 2025 13:12:41 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Basic Setup and Play</title>
+      <link>https://c-f-h.github.io/post/basic-setup-and-play/</link>
+      <pubDate>Sun, 20 Apr 2025 13:12:41 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/basic-setup-and-play/</guid>
+      <description>&lt;p&gt;Let&amp;rsquo;s get into a bit more technical detail on how our
+&lt;a href=&#34;https://c-f-h.github.io/post/connect-zero/&#34;&gt;Connect 4-playing model&lt;/a&gt;
+will be set up, and how a basic game loop works.
+Throughout all code samples we&amp;rsquo;ll always assume the standard PyTorch imports:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;torch&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;torch.nn&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;as&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;nn&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;torch.nn.functional&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;as&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;F&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;board-state&#34;&gt;Board state&lt;/h2&gt;
+&lt;p&gt;The current board state will be represented by a 6x7 PyTorch &lt;code&gt;int8&lt;/code&gt; tensor,
+initially filled with zeros.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;board&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;torch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;zeros&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;((&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ROWS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;COLS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;dtype&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;torch&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;int8&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;device&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;DEVICE&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The board is ordered such that &lt;code&gt;board[0, :]&lt;/code&gt; is the top row.
+A non-empty cell is represented by +1 or -1. To simplify things, we always
+represent the player whose move it currently is by +1, and the opponent by -1.
+This way we don&amp;rsquo;t need any separate state to keep track of whose move it is.
+After a move has been made, we simply flip the board by doing&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Training the First Model</title>
       <link>https://c-f-h.github.io/post/training-the-first-model/</link>

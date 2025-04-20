@@ -8,6 +8,7 @@ brainstorming and implementation, but the writing on this blog is
 all my own.
 
 Projects:
+- [Connect-Zero: Reinforcement Learning from Scratch]({{< relref "categories/connect-zero" >}}) ([intro post]({{< relref "post/connect-zero" >}}))
 - [The Triangle Project]({{< relref "categories/the-triangle-project" >}}) ([intro post]({{< relref "post/the-triangle-problem" >}}))
 
 ## Recent posts

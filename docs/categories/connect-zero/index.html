@@ -147,11 +147,39 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Basic Setup and Play
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Let’s get into a bit more technical detail on how our Connect 4-playing model will be set up, and how a basic game loop works. Throughout all code samples we’ll always assume the standard PyTorch imports:
+import torch import torch.nn as nn import torch.nn.functional as F Board state The current board state will be represented by a 6x7 PyTorch int8 tensor, initially filled with zeros.
+board = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE) The board is ordered such that board[0, :] is the top row. A non-empty cell is represented by &#43;1 or -1. To simplify things, we always represent the player whose move it currently is by &#43;1, and the opponent by -1. This way we don’t need any separate state to keep track of whose move it is. After a move has been made, we simply flip the board by doing
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-04-20 13:12:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to Basic Setup and Play" href="https://c-f-h.github.io/post/basic-setup-and-play/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Connect-Zero: Reinforcement Learning from Scratch
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>For a long time I’ve wanted to get deeper into reinforcement learning (RL), and the project I finally settled on is teaching a neural network model how to play the classic game Connect 4 (pretty sneaky, sis!). Obviously, the name “Connect-Zero” is a cheeky nod to AlphaGo Zero and AlphaZero by DeepMind. I chose Connect 4 because it’s a simple game everyone knows how to play where we can hope to achieve good results without expensive hardware and high training costs.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-04-20 13:12:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to Connect-Zero: Reinforcement Learning from Scratch" href="https://c-f-h.github.io/post/connect-zero/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Connect 4
     </h2>
   </header>
   <div class="entry-content">
-    <p> The computer opponent is a neural network trained using reinforcement learning. Details are forthcoming.
+    <p> The computer opponent is a neural network trained using reinforcement learning. It was exported to ONNX and now runs right here in your browser. See Connect-Zero and the follow-up posts for details.
 </p>
   </div>
   <footer class="entry-footer"><span title='2025-04-20 09:29:36 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>

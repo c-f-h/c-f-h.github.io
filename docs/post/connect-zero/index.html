@@ -5,14 +5,17 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Connect 4 | cfh::blog</title>
-<meta name="keywords" content="">
-<meta name="description" content="
-The computer opponent is a neural network trained using reinforcement learning.
-It was exported to ONNX and now runs right here in your browser.
-See Connect-Zero and the follow-up posts for details.">
+<title>Connect-Zero: Reinforcement Learning from Scratch | cfh::blog</title>
+<meta name="keywords" content="ML, RL">
+<meta name="description" content="For a long time I&rsquo;ve wanted to get deeper into reinforcement learning (RL), and the project
+I finally settled on is teaching a neural network model
+how to play the classic game Connect 4 (pretty sneaky, sis!).
+Obviously, the name &ldquo;Connect-Zero&rdquo; is a cheeky nod to AlphaGo Zero
+and AlphaZero by DeepMind.
+I chose Connect 4 because it&rsquo;s a simple game everyone knows how to play where we can
+hope to achieve good results without expensive hardware and high training costs.">
 <meta name="author" content="cfh">
-<link rel="canonical" href="https://c-f-h.github.io/post/connect-4/">
+<link rel="canonical" href="https://c-f-h.github.io/post/connect-zero/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
@@ -21,7 +24,7 @@ See Connect-Zero and the follow-up posts for details.">
 <link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/connect-4/">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/connect-zero/">
 <noscript>
     <style>
         #theme-toggle,
@@ -74,27 +77,27 @@ See Connect-Zero and the follow-up posts for details.">
 </script>
   
   
-  <link rel="stylesheet" href="/connect4/connect4-game.css">
-  <script src="/connect4/connect4-game.js"></script>
   
-  
-  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
-  
-</head><meta property="og:url" content="https://c-f-h.github.io/post/connect-4/">
+</head><meta property="og:url" content="https://c-f-h.github.io/post/connect-zero/">
   <meta property="og:site_name" content="cfh::blog">
-  <meta property="og:title" content="Connect 4">
-  <meta property="og:description" content=" The computer opponent is a neural network trained using reinforcement learning. It was exported to ONNX and now runs right here in your browser. See Connect-Zero and the follow-up posts for details.">
+  <meta property="og:title" content="Connect-Zero: Reinforcement Learning from Scratch">
+  <meta property="og:description" content="For a long time I’ve wanted to get deeper into reinforcement learning (RL), and the project I finally settled on is teaching a neural network model how to play the classic game Connect 4 (pretty sneaky, sis!). Obviously, the name “Connect-Zero” is a cheeky nod to AlphaGo Zero and AlphaZero by DeepMind. I chose Connect 4 because it’s a simple game everyone knows how to play where we can hope to achieve good results without expensive hardware and high training costs.">
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="post">
-    <meta property="article:published_time" content="2025-04-20T09:29:36+02:00">
-    <meta property="article:modified_time" content="2025-04-20T09:29:36+02:00">
+    <meta property="article:published_time" content="2025-04-20T13:12:41+02:00">
+    <meta property="article:modified_time" content="2025-04-20T13:12:41+02:00">
+    <meta property="article:tag" content="ML">
+    <meta property="article:tag" content="RL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Connect 4">
-<meta name="twitter:description" content="
-The computer opponent is a neural network trained using reinforcement learning.
-It was exported to ONNX and now runs right here in your browser.
-See Connect-Zero and the follow-up posts for details.">
+<meta name="twitter:title" content="Connect-Zero: Reinforcement Learning from Scratch">
+<meta name="twitter:description" content="For a long time I&rsquo;ve wanted to get deeper into reinforcement learning (RL), and the project
+I finally settled on is teaching a neural network model
+how to play the classic game Connect 4 (pretty sneaky, sis!).
+Obviously, the name &ldquo;Connect-Zero&rdquo; is a cheeky nod to AlphaGo Zero
+and AlphaZero by DeepMind.
+I chose Connect 4 because it&rsquo;s a simple game everyone knows how to play where we can
+hope to achieve good results without expensive hardware and high training costs.">
 
 
 <script type="application/ld+json">
@@ -111,8 +114,8 @@ See Connect-Zero and the follow-up posts for details.">
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "Connect 4",
-      "item": "https://c-f-h.github.io/post/connect-4/"
+      "name": "Connect-Zero: Reinforcement Learning from Scratch",
+      "item": "https://c-f-h.github.io/post/connect-zero/"
     }
   ]
 }
@@ -121,24 +124,24 @@ See Connect-Zero and the follow-up posts for details.">
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Connect 4",
-  "name": "Connect 4",
-  "description": " The computer opponent is a neural network trained using reinforcement learning. It was exported to ONNX and now runs right here in your browser. See Connect-Zero and the follow-up posts for details.\n",
+  "headline": "Connect-Zero: Reinforcement Learning from Scratch",
+  "name": "Connect-Zero: Reinforcement Learning from Scratch",
+  "description": "For a long time I\u0026rsquo;ve wanted to get deeper into reinforcement learning (RL), and the project I finally settled on is teaching a neural network model how to play the classic game Connect 4 (pretty sneaky, sis!). Obviously, the name \u0026ldquo;Connect-Zero\u0026rdquo; is a cheeky nod to AlphaGo Zero and AlphaZero by DeepMind. I chose Connect 4 because it\u0026rsquo;s a simple game everyone knows how to play where we can hope to achieve good results without expensive hardware and high training costs.\n",
   "keywords": [
-    
+    "ML", "RL"
   ],
-  "articleBody": " The computer opponent is a neural network trained using reinforcement learning. It was exported to ONNX and now runs right here in your browser. See Connect-Zero and the follow-up posts for details.\n",
-  "wordCount" : "32",
+  "articleBody": "For a long time I’ve wanted to get deeper into reinforcement learning (RL), and the project I finally settled on is teaching a neural network model how to play the classic game Connect 4 (pretty sneaky, sis!). Obviously, the name “Connect-Zero” is a cheeky nod to AlphaGo Zero and AlphaZero by DeepMind. I chose Connect 4 because it’s a simple game everyone knows how to play where we can hope to achieve good results without expensive hardware and high training costs.\nSome ground rules:\nThe neural network model gets nothing but the current board state as a 6x7 grid and outputs a classifier over the seven columns for which move to play next. Like AlphaZero, it doesn’t train on any human games, but only on computer-generated ones. Unlike AlphaZero, it doesn’t do any tree seach to find the best moves, for two reasons: for simplicity, and because I was curious to see how far you could get with a simple move predictor. In fact, there’s precedent to show that even for Chess, a vastly more complicated game, this can work well: see the DeepMind paper Grandmaster-Level Chess Without Search, which trained a pure next-move predictor for Chess. However, they used Stockfish as a teacher for their model, rather than self-play. Build it from scratch in PyTorch, without relying on any existing RL framework. The point is to learn about the techniques more than just getting to the end. You can actually play against a version of the current model right now! It will take a couple of blog posts until we catch up to that level, though.\n",
+  "wordCount" : "267",
   "inLanguage": "en",
-  "datePublished": "2025-04-20T09:29:36+02:00",
-  "dateModified": "2025-04-20T09:29:36+02:00",
+  "datePublished": "2025-04-20T13:12:41+02:00",
+  "dateModified": "2025-04-20T13:12:41+02:00",
   "author":{
     "@type": "Person",
     "name": "cfh"
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https://c-f-h.github.io/post/connect-4/"
+    "@id": "https://c-f-h.github.io/post/connect-zero/"
   },
   "publisher": {
     "@type": "Organization",
@@ -211,32 +214,60 @@ See Connect-Zero and the follow-up posts for details.">
   <header class="post-header">
     <div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/post/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
-      Connect 4
+      Connect-Zero: Reinforcement Learning from Scratch
     </h1>
-    <div class="post-meta"><span title='2025-04-20 09:29:36 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh
+    <div class="post-meta"><span title='2025-04-20 13:12:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh
 
 </div>
   </header> 
-  <div class="post-content"><div id="game-container1" class="connect4-container"
-    data-human="1" data-cpu="2"
-    data-random-first-player="true"
-    data-onnx-model="export.onnx"
-></div>
-<p>The computer opponent is a neural network trained using reinforcement learning.
-It was exported to ONNX and now runs right here in your browser.
-See <a href="/post/connect-zero/">Connect-Zero</a> and the follow-up posts for details.</p>
+  <div class="post-content"><p>For a long time I&rsquo;ve wanted to get deeper into reinforcement learning (RL), and the project
+I finally settled on is teaching a neural network model
+how to play the classic game <strong>Connect 4</strong> (<a href="https://www.youtube.com/watch?v=KN3nohBw_CE">pretty sneaky, sis!</a>).
+Obviously, the name &ldquo;Connect-Zero&rdquo; is a cheeky nod to AlphaGo Zero
+and AlphaZero by DeepMind.
+I chose Connect 4 because it&rsquo;s a simple game everyone knows how to play where we can
+hope to achieve good results without expensive hardware and high training costs.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="screenshot.png#center"
+         alt="A screenshot of a Connect 4 game" width="200"/> 
+</figure>
+
+<p>Some ground rules:</p>
+<ul>
+<li>The neural network model gets nothing but the current board state as a 6x7 grid and
+outputs a classifier over the seven columns for which move to play next.</li>
+<li>Like AlphaZero, it doesn&rsquo;t train on any human games, but only on computer-generated ones.</li>
+<li>Unlike AlphaZero, it doesn&rsquo;t do any tree seach to find the best moves, for two reasons:
+for simplicity, and because I was curious to see how far you could get with a
+simple move predictor. In fact, there&rsquo;s precedent to show that even for Chess, a vastly
+more complicated game, this can work well: see the DeepMind paper
+<a href="https://arxiv.org/pdf/2402.04494v1">Grandmaster-Level Chess Without Search</a>, which
+trained a pure next-move predictor for Chess. However, they used Stockfish as a teacher
+for their model, rather than self-play.</li>
+<li>Build it from scratch in PyTorch, without relying on any existing RL framework. The
+point is to learn about the techniques more than just getting to the end.</li>
+</ul>
+<p>You can actually <a href="/post/connect-4/">play against a version</a> of the current model
+right now! It will take a couple of blog posts until we catch up to that level, though.</p>
 
 
   </div>
 
   <footer class="post-footer">
     <ul class="post-tags">
+      <li><a href="https://c-f-h.github.io/tags/ml/">ML</a></li>
+      <li><a href="https://c-f-h.github.io/tags/rl/">RL</a></li>
     </ul>
 <nav class="paginav">
-  <a class="next" href="https://c-f-h.github.io/post/connect-zero/">
+  <a class="prev" href="https://c-f-h.github.io/post/connect-4/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Connect 4</span>
+  </a>
+  <a class="next" href="https://c-f-h.github.io/post/basic-setup-and-play/">
     <span class="title">Next »</span>
     <br>
-    <span>Connect-Zero: Reinforcement Learning from Scratch</span>
+    <span>Basic Setup and Play</span>
   </a>
 </nav>
 

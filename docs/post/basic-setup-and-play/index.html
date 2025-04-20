@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Basic Setup and Play | cfh::blog</title>
+<meta name="keywords" content="Python, PyTorch">
+<meta name="description" content="Let&rsquo;s get into a bit more technical detail on how our
+Connect 4-playing model
+will be set up, and how a basic game loop works.
+Throughout all code samples we&rsquo;ll always assume the standard PyTorch imports:
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+Board state
+The current board state will be represented by a 6x7 PyTorch int8 tensor,
+initially filled with zeros.
+    board = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE)
+The board is ordered such that board[0, :] is the top row.
+A non-empty cell is represented by &#43;1 or -1. To simplify things, we always
+represent the player whose move it currently is by &#43;1, and the opponent by -1.
+This way we don&rsquo;t need any separate state to keep track of whose move it is.
+After a move has been made, we simply flip the board by doing">
+<meta name="author" content="cfh">
+<link rel="canonical" href="https://c-f-h.github.io/post/basic-setup-and-play/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://c-f-h.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://c-f-h.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/basic-setup-and-play/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><head>
+  
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  
+      inlineMath: [['\\(', '\\)']]                  
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+</script>
+  
+  
+  
+</head><meta property="og:url" content="https://c-f-h.github.io/post/basic-setup-and-play/">
+  <meta property="og:site_name" content="cfh::blog">
+  <meta property="og:title" content="Basic Setup and Play">
+  <meta property="og:description" content="Let’s get into a bit more technical detail on how our Connect 4-playing model will be set up, and how a basic game loop works. Throughout all code samples we’ll always assume the standard PyTorch imports:
+import torch import torch.nn as nn import torch.nn.functional as F Board state The current board state will be represented by a 6x7 PyTorch int8 tensor, initially filled with zeros.
+board = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE) The board is ordered such that board[0, :] is the top row. A non-empty cell is represented by &#43;1 or -1. To simplify things, we always represent the player whose move it currently is by &#43;1, and the opponent by -1. This way we don’t need any separate state to keep track of whose move it is. After a move has been made, we simply flip the board by doing">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2025-04-20T13:12:41+02:00">
+    <meta property="article:modified_time" content="2025-04-20T13:12:41+02:00">
+    <meta property="article:tag" content="Python">
+    <meta property="article:tag" content="PyTorch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Basic Setup and Play">
+<meta name="twitter:description" content="Let&rsquo;s get into a bit more technical detail on how our
+Connect 4-playing model
+will be set up, and how a basic game loop works.
+Throughout all code samples we&rsquo;ll always assume the standard PyTorch imports:
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+Board state
+The current board state will be represented by a 6x7 PyTorch int8 tensor,
+initially filled with zeros.
+    board = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE)
+The board is ordered such that board[0, :] is the top row.
+A non-empty cell is represented by &#43;1 or -1. To simplify things, we always
+represent the player whose move it currently is by &#43;1, and the opponent by -1.
+This way we don&rsquo;t need any separate state to keep track of whose move it is.
+After a move has been made, we simply flip the board by doing">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://c-f-h.github.io/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Basic Setup and Play",
+      "item": "https://c-f-h.github.io/post/basic-setup-and-play/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Basic Setup and Play",
+  "name": "Basic Setup and Play",
+  "description": "Let\u0026rsquo;s get into a bit more technical detail on how our Connect 4-playing model will be set up, and how a basic game loop works. Throughout all code samples we\u0026rsquo;ll always assume the standard PyTorch imports:\nimport torch import torch.nn as nn import torch.nn.functional as F Board state The current board state will be represented by a 6x7 PyTorch int8 tensor, initially filled with zeros.\nboard = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE) The board is ordered such that board[0, :] is the top row. A non-empty cell is represented by +1 or -1. To simplify things, we always represent the player whose move it currently is by +1, and the opponent by -1. This way we don\u0026rsquo;t need any separate state to keep track of whose move it is. After a move has been made, we simply flip the board by doing\n",
+  "keywords": [
+    "Python", "PyTorch"
+  ],
+  "articleBody": "Let’s get into a bit more technical detail on how our Connect 4-playing model will be set up, and how a basic game loop works. Throughout all code samples we’ll always assume the standard PyTorch imports:\nimport torch import torch.nn as nn import torch.nn.functional as F Board state The current board state will be represented by a 6x7 PyTorch int8 tensor, initially filled with zeros.\nboard = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE) The board is ordered such that board[0, :] is the top row. A non-empty cell is represented by +1 or -1. To simplify things, we always represent the player whose move it currently is by +1, and the opponent by -1. This way we don’t need any separate state to keep track of whose move it is. After a move has been made, we simply flip the board by doing\nboard = -board Model protocol Any model that wants to play a game of Connect 4 will have to follow a simple protocol: it takes in the current board state as described above and outputs a float32 tensor of seven numbers which represent the probability of playing a move in each of the seven columns. The output here is in raw logits, that is, arbitrary numbers between minus and plus infinity. To convert these to probabilities, we use the softmax operator which applies an exponential function to each number and then normalizes them to add up to 1. Finally, we choose a move by sampling from the resulting random distribution over the seven columns.\nThere is one slight complication: once a column is full, i.e., board[0, c] != 0, it’s no longer valid to play a move there, and we can’t rely on the model to always output zero probabilities for full columns. So after obtaining the raw logits, we set any of them corresponding to illegal moves to minus infinity, which will result in a zero probability for that column.\nSo a simple function to sample a valid move from a model could look like this:\ndef sample_move(model, board: torch.Tensor) -\u003e int: \"\"\"Sample a random move using the model's output logits.\"\"\" logits = model(board) # Get raw logits from model illegal_moves = torch.where(board[0, :] == 0, 0.0, -torch.inf) logits += illegal_moves # Mask out illegal moves probs = F.softmax(logits, dim=-1) # Convert logits to probabilities return torch.multinomial(probs, 1).item() # Sample the distribution For performance and batching, we extend the model protocol to also allow an entire batch of boards for evaluation, so with a batch size B it will then map tensors of size\n(B, 6, 7) -\u003e (B, 7) Probably the simplest possible model you could write is one that just makes random moves:\nclass RandomPlayer(nn.Module): def forward(self, x: torch.Tensor) -\u003e torch.Tensor: if x.ndim == 2: # Single board state: (6, 7) return torch.zeros((7,)) else: # A batch of board states: (B, 6, 7) return torch.zeros((x.size(0), 7),) # -\u003e (B, 7) That’s all we need: a vector of constant logits is mapped to constant probabilities by softmax, and we don’t need to worry about illegal moves either because sample_move takes care of that.\nPlaying a game There is one other function we need, make_move_and_check(board, move), which returns the new board state after making a move in the given column, as well as a flag indicating whether the move resulted in a win. It’s pretty straightforward but a bit tedious to write because of the various directions you have to check for a winning row, so I’m not reproducing it here, but you can check it out in the repo.\ndef play(model1, model2): \"\"\"Have two models play against each other. Returns the winner (1 or 2) or 0 for a draw.\"\"\" model1.eval() model2.eval() winner = 1 with torch.no_grad(): board = torch.zeros((6, 7), dtype=torch.int8, device=DEVICE) while True: # Get move from the model, play it and check for a win move = sample_move(model1, board, output_probs=output) board, win = make_move_and_check(board, move) if win: return winner elif torch.all(board[0, :] != 0): # Check if the top row is full return 0 # Draw board = -board # Flip the board for the other player winner = 3 - winner # Alternate between 1 and 2 model1, model2 = model2, model1 # Swap models for the next turn There is another terminal condition we have to check for here: if the entire board got filled up, which we check for by simply examining the top row, the game ended in a draw.\nWe now have the basic mechanism for self-play set up and can generate any number of games by having two models play against each other. In practice we play an entire batch of games at once because it’s significantly more efficient; it complicates the basic game loop above a bit but it’s still pretty straightforward.\nAnother simple extension of this function we will need for training is that it should be able to return not just the final result, but a full list of all encountered board states, the moves that the model made in those states, and a vector of rewards which indicates if the model won or lost the game. So after playing one or a batch of games, we’ll get three tensors\nall_states: (N, 6, 7) dtype=torch.int8 all_moves: (N,) dtype=torch.long all_rewards: (N,) dtype=torch.float32 Here N is the total number of moves the model made across all games played. We’ll talk about the exact form the rewards take later on, but for now just think of them as being +1 for a win, 0 for a draw, and -1 for a loss.\n",
+  "wordCount" : "924",
+  "inLanguage": "en",
+  "datePublished": "2025-04-20T13:12:41+02:00",
+  "dateModified": "2025-04-20T13:12:41+02:00",
+  "author":{
+    "@type": "Person",
+    "name": "cfh"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://c-f-h.github.io/post/basic-setup-and-play/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "cfh::blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://c-f-h.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://c-f-h.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://c-f-h.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/post/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Basic Setup and Play
+    </h1>
+    <div class="post-meta"><span title='2025-04-20 13:12:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh
+
+</div>
+  </header> 
+  <div class="post-content"><p>Let&rsquo;s get into a bit more technical detail on how our
+<a href="/post/connect-zero/">Connect 4-playing model</a>
+will be set up, and how a basic game loop works.
+Throughout all code samples we&rsquo;ll always assume the standard PyTorch imports:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+</span></span></code></pre></div><h2 id="board-state">Board state<a hidden class="anchor" aria-hidden="true" href="#board-state">#</a></h2>
+<p>The current board state will be represented by a 6x7 PyTorch <code>int8</code> tensor,
+initially filled with zeros.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl">    <span class="n">board</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ROWS</span><span class="p">,</span> <span class="n">COLS</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+</span></span></code></pre></div><p>The board is ordered such that <code>board[0, :]</code> is the top row.
+A non-empty cell is represented by +1 or -1. To simplify things, we always
+represent the player whose move it currently is by +1, and the opponent by -1.
+This way we don&rsquo;t need any separate state to keep track of whose move it is.
+After a move has been made, we simply flip the board by doing</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl">    <span class="n">board</span> <span class="o">=</span> <span class="o">-</span><span class="n">board</span>
+</span></span></code></pre></div><h2 id="model-protocol">Model protocol<a hidden class="anchor" aria-hidden="true" href="#model-protocol">#</a></h2>
+<p>Any model that wants to play a game of Connect 4 will have to follow a simple protocol:
+it takes in the current board state as described above and outputs a <code>float32</code> tensor of
+seven numbers which represent the probability of playing a move in each of the seven
+columns.
+The output here is in raw logits, that is, arbitrary numbers between minus and plus
+infinity. To convert these to probabilities, we use the
+<a href="https://en.wikipedia.org/wiki/Softmax_function">softmax operator</a> which applies
+an exponential function to each number and then normalizes them to add up to 1.
+Finally, we choose a move by sampling from the resulting random distribution over the
+seven columns.</p>
+<p>There is one slight complication: once a column is full, i.e., <code>board[0, c] != 0</code>,
+it&rsquo;s no longer valid to play a
+move there, and we can&rsquo;t rely on the model to always output zero probabilities for full
+columns. So after obtaining the raw logits, we set any of them corresponding to illegal
+moves to minus infinity, which will result in a zero probability for that column.</p>
+<p>So a simple function to sample a valid move from a model could look like this:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">sample_move</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">board</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Sample a random move using the model&#39;s output logits.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">board</span><span class="p">)</span>                       <span class="c1"># Get raw logits from model</span>
+</span></span><span class="line"><span class="cl">    <span class="n">illegal_moves</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">board</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">logits</span> <span class="o">+=</span> <span class="n">illegal_moves</span>                     <span class="c1"># Mask out illegal moves</span>
+</span></span><span class="line"><span class="cl">    <span class="n">probs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>           <span class="c1"># Convert logits to probabilities</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>   <span class="c1"># Sample the distribution</span>
+</span></span></code></pre></div><p>For performance and batching, we extend the model protocol to also allow
+an entire batch of boards for evaluation, so with a batch size <code>B</code> it will then map
+tensors of size</p>
+<pre tabindex="0"><code>    (B, 6, 7) -&gt; (B, 7)
+</code></pre><p>Probably the simplest possible model you could write is one that just makes random
+moves:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">RandomPlayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>   <span class="c1"># Single board state: (6, 7)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">7</span><span class="p">,))</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>             <span class="c1"># A batch of board states: (B, 6, 7)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">7</span><span class="p">),)</span>   <span class="c1"># -&gt; (B, 7)</span>
+</span></span></code></pre></div><p>That&rsquo;s all we need: a vector of constant logits is mapped to constant probabilities by
+softmax, and we don&rsquo;t need to worry about illegal moves either because <code>sample_move</code>
+takes care of that.</p>
+<h2 id="playing-a-game">Playing a game<a hidden class="anchor" aria-hidden="true" href="#playing-a-game">#</a></h2>
+<p>There is one other function we need, <code>make_move_and_check(board, move)</code>, which
+returns the new board state after making a move in the given column,
+as well as a flag indicating whether the move resulted in a win.
+It&rsquo;s pretty straightforward but a bit tedious to
+write because of the various directions you have to check for a winning row,
+so I&rsquo;m not reproducing it here, but you can check it out in the repo.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="n">model1</span><span class="p">,</span> <span class="n">model2</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Have two models play against each other. Returns the winner (1 or 2)
+</span></span></span><span class="line"><span class="cl"><span class="s2">    or 0 for a draw.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model1</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model2</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">winner</span> <span class="o">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">        <span class="n">board</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># Get move from the model, play it and check for a win</span>
+</span></span><span class="line"><span class="cl">            <span class="n">move</span> <span class="o">=</span> <span class="n">sample_move</span><span class="p">(</span><span class="n">model1</span><span class="p">,</span> <span class="n">board</span><span class="p">,</span> <span class="n">output_probs</span><span class="o">=</span><span class="n">output</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">board</span><span class="p">,</span> <span class="n">win</span> <span class="o">=</span> <span class="n">make_move_and_check</span><span class="p">(</span><span class="n">board</span><span class="p">,</span> <span class="n">move</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">win</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="n">winner</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">elif</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">board</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>  <span class="c1"># Check if the top row is full   </span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="mi">0</span>    <span class="c1"># Draw</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">board</span> <span class="o">=</span> <span class="o">-</span><span class="n">board</span>                  <span class="c1"># Flip the board for the other player</span>
+</span></span><span class="line"><span class="cl">            <span class="n">winner</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">winner</span>             <span class="c1"># Alternate between 1 and 2</span>
+</span></span><span class="line"><span class="cl">            <span class="n">model1</span><span class="p">,</span> <span class="n">model2</span> <span class="o">=</span> <span class="n">model2</span><span class="p">,</span> <span class="n">model1</span> <span class="c1"># Swap models for the next turn</span>
+</span></span></code></pre></div><p>There is another terminal condition we have to check for here: if the entire board
+got filled up, which we check for by simply examining the top row, the game ended in a draw.</p>
+<p>We now have the basic mechanism for self-play set up and can generate any number of
+games by having two models play against each other. In practice we play an entire
+batch of games at once because it&rsquo;s significantly more efficient; it complicates the
+basic game loop above a bit but it&rsquo;s still pretty straightforward.</p>
+<p>Another simple extension of this function we will need for training is that
+it should be able to return not just the final result, but a full list of all encountered
+board states, the moves that the model made in those states, and a vector of rewards which
+indicates if the model won or lost the game. So after playing one or a batch of games,
+we&rsquo;ll get three tensors</p>
+<pre tabindex="0"><code>    all_states:   (N, 6, 7)    dtype=torch.int8
+    all_moves:    (N,)         dtype=torch.long
+    all_rewards:  (N,)         dtype=torch.float32
+</code></pre><p>Here <code>N</code> is the total number of moves the model made across all games played.
+We&rsquo;ll talk about the exact form the rewards take later on, but for now just think
+of them as being +1 for a win, 0 for a draw, and -1 for a loss.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://c-f-h.github.io/tags/python/">Python</a></li>
+      <li><a href="https://c-f-h.github.io/tags/pytorch/">PyTorch</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://c-f-h.github.io/post/connect-zero/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Connect-Zero: Reinforcement Learning from Scratch</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://c-f-h.github.io/">cfh::blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
