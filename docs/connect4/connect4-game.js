@@ -83,8 +83,10 @@ class Connect4Game {
                 console.error("Error initializing model:", error);
             });
         }
-        else
+        else {
+            this.valuationBar.style.display = 'none';
             this.resetGame(); // No need to wait for model initialization
+        }
     }
 
     resetGame() {
@@ -93,7 +95,12 @@ class Connect4Game {
         }
 
         this.board = Array(this.ROWS).fill().map(() => Array(this.COLS).fill(this.EMPTY));
-        this.moveHistory = [];
+
+        if (this.gameContainer.dataset.movelist) {
+            this.moveHistory = JSON.parse(this.gameContainer.dataset.movelist).map(move => parseInt(move));
+            this.resetButton.style.display = 'none';
+        } else
+            this.moveHistory = [];
         this.currentMoveIndex = 0;
         this.checkForGameOver();
         this.boardSvg.innerHTML = '';
