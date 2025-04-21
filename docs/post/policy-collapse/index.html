@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>A First Training Run and Policy Collapse | cfh::blog</title>
+<meta name="keywords" content="Python, PyTorch, ML, RL, Math">
+<meta name="description" content="With the REINFORCE algorithm under our belt,
+we can finally attempt to start training some models for
+Connect 4.
+However, as we&rsquo;ll see, there are still some hurdles in our way before we get anywhere.
+It&rsquo;s good to set your expectations accordingly because rarely if ever do things go
+smoothly the first time in RL.
+A simple MLP model
+As a fruitfly of Connect 4-playing models, let&rsquo;s start with a simple multilayer perceptron
+(MLP) model that follows the model protocol we
+outlined earlier: that means that it has an input layer taking a 6x7 int8 board state
+tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation
+function each, and an output layer of 7 neurons without any activation function&mdash;that&rsquo;s
+exactly what we meant earlier when we said that the model should output raw logits.">
+<meta name="author" content="cfh">
+<link rel="canonical" href="https://c-f-h.github.io/post/policy-collapse/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://c-f-h.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://c-f-h.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/policy-collapse/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><head>
+  
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  
+      inlineMath: [['\\(', '\\)']]                  
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+</script>
+  
+  
+  <link rel="stylesheet" href="/connect4/connect4-game.css">
+  <script src="/connect4/connect4-game.js"></script>
+  
+  
+</head><meta property="og:url" content="https://c-f-h.github.io/post/policy-collapse/">
+  <meta property="og:site_name" content="cfh::blog">
+  <meta property="og:title" content="A First Training Run and Policy Collapse">
+  <meta property="og:description" content="With the REINFORCE algorithm under our belt, we can finally attempt to start training some models for Connect 4. However, as we’ll see, there are still some hurdles in our way before we get anywhere. It’s good to set your expectations accordingly because rarely if ever do things go smoothly the first time in RL.
+A simple MLP model As a fruitfly of Connect 4-playing models, let’s start with a simple multilayer perceptron (MLP) model that follows the model protocol we outlined earlier: that means that it has an input layer taking a 6x7 int8 board state tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation function each, and an output layer of 7 neurons without any activation function—that’s exactly what we meant earlier when we said that the model should output raw logits.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2025-04-21T17:45:00+02:00">
+    <meta property="article:modified_time" content="2025-04-21T17:45:00+02:00">
+    <meta property="article:tag" content="Python">
+    <meta property="article:tag" content="PyTorch">
+    <meta property="article:tag" content="ML">
+    <meta property="article:tag" content="RL">
+    <meta property="article:tag" content="Math">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="A First Training Run and Policy Collapse">
+<meta name="twitter:description" content="With the REINFORCE algorithm under our belt,
+we can finally attempt to start training some models for
+Connect 4.
+However, as we&rsquo;ll see, there are still some hurdles in our way before we get anywhere.
+It&rsquo;s good to set your expectations accordingly because rarely if ever do things go
+smoothly the first time in RL.
+A simple MLP model
+As a fruitfly of Connect 4-playing models, let&rsquo;s start with a simple multilayer perceptron
+(MLP) model that follows the model protocol we
+outlined earlier: that means that it has an input layer taking a 6x7 int8 board state
+tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation
+function each, and an output layer of 7 neurons without any activation function&mdash;that&rsquo;s
+exactly what we meant earlier when we said that the model should output raw logits.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://c-f-h.github.io/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "A First Training Run and Policy Collapse",
+      "item": "https://c-f-h.github.io/post/policy-collapse/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "A First Training Run and Policy Collapse",
+  "name": "A First Training Run and Policy Collapse",
+  "description": "With the REINFORCE algorithm under our belt, we can finally attempt to start training some models for Connect 4. However, as we\u0026rsquo;ll see, there are still some hurdles in our way before we get anywhere. It\u0026rsquo;s good to set your expectations accordingly because rarely if ever do things go smoothly the first time in RL.\nA simple MLP model As a fruitfly of Connect 4-playing models, let\u0026rsquo;s start with a simple multilayer perceptron (MLP) model that follows the model protocol we outlined earlier: that means that it has an input layer taking a 6x7 int8 board state tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation function each, and an output layer of 7 neurons without any activation function\u0026mdash;that\u0026rsquo;s exactly what we meant earlier when we said that the model should output raw logits.\n",
+  "keywords": [
+    "Python", "PyTorch", "ML", "RL", "Math"
+  ],
+  "articleBody": "With the REINFORCE algorithm under our belt, we can finally attempt to start training some models for Connect 4. However, as we’ll see, there are still some hurdles in our way before we get anywhere. It’s good to set your expectations accordingly because rarely if ever do things go smoothly the first time in RL.\nA simple MLP model As a fruitfly of Connect 4-playing models, let’s start with a simple multilayer perceptron (MLP) model that follows the model protocol we outlined earlier: that means that it has an input layer taking a 6x7 int8 board state tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation function each, and an output layer of 7 neurons without any activation function—that’s exactly what we meant earlier when we said that the model should output raw logits.\nThat’s straightforward to describe in PyTorch:\nclass SimpleMLPModel(nn.Module): \"\"\"Create a simple MLP model for Connect4.\"\"\" def __init__(self): super().__init__() self.layers = nn.ModuleList([ nn.Flatten(), nn.Linear(ROWS * COLS, 128), nn.ReLU(), nn.Linear(128, 64), nn.ReLU(), nn.Linear(64, COLS) ]) def forward(self, x): # Store original shape and determine batch size original_shape = x.shape if x.ndim == 2: x = x.unsqueeze(0) # -\u003e (1, 6, 7) x = x.float() # Ensure input is float32 for layer in self.layers: x = layer(x) # If the original input was a single instance, remove the batch dimension if len(original_shape) == 2: x = x.squeeze(0) # -\u003e (7,) return x There’s some extra code in the forward method which just makes sure that our model can deal both with a single board input with shape (6, 7) as well as with a batch of boards, (B, 6, 7).\nFor a strong board-game playing model, we’ll want at least a few convolution layers later on, but as we’ll see shortly, playing strength is not the first thing we have to worry about.\nThe self-play loop Let’s write the self-play loop. It’s common in this type of training to have the model play not against its current “live” version, but to take checkpoints of it at regular intervals and have it compete against that. So we have the live model and its checkpointed version model_cp against which the main model plays, and we copy the weights over from the former to the latter at regular intervals.\nWe’ll run 50 games per batch, where we have to make sure that each model gets to move first an equal number of times since the first player has a significant advantage in Connect 4. (Strictly speaking, Connect 4 is a solved game—under perfect play the first player always wins.) We have a function play_multiple_against_model which lets each model go first equally and also collects the needed information for REINFORCE (states, actions, and returns) discussed in the previous post. Then, every 100 batches (what we somewhat arbitrarily call an epoch here), we update the checkpoint model and save it to disk for good measure.\nHere’s the code for the self-play loop:\ndef self_play_loop(model_constructor, games_per_batch=50, batches_per_epoch=100, learning_rate=1e-3, cp_file=\"last_cp.pth\"): # Create two copies of the model model = model_constructor() model_cp = model_constructor() # initialize the Adam optimizer optimizer = optim.AdamW(model.parameters(), lr=learning_rate) # ----------------- MAIN TRAINING LOOP ----------------- # epoch = 0 while True: for batchnr in range(batches_per_epoch): # play a batch of games board_states, actions, returns = play_multiple_against_model( model, model_cp, num_games=games_per_batch) # apply the REINFORCE policy update rule update_policy(model, optimizer, board_states, actions, returns) if batchnr % 20 == 19: print(f\"Batch {batchnr+1} / {batches_per_epoch} done.\") # Save model state to a checkpoint file torch.save({ 'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict() }, cp_file) # Copy the model state to the checkpoint model model_cp.load_state_dict(model.state_dict()) epoch += 1 print(f\"\\nEpoch {epoch} done. Model saved to {cp_file}.\") if __name__ == \"__main__\": DEVICE = torch.device(\"cpu\") self_play_loop(SimpleMLPModel, games_per_batch=50, batches_per_epoch=100, cp_file=\"last_cp.pth\") There’s something very important missing here: monitoring and plotting. We won’t get far in RL without extensive monitoring because things will go wrong in totally unexpected ways, and we won’t even know what’s wrong if we don’t have the capability to plot all kinds of quantities of interest.\nThe actual code in the repo for this project does have matplotlib-based visualization which I stripped out for the example code here because it’s essentially plumbing and not that interesting. Just keep in mind that you do need it. You could always use tensorboard, for example.\nThe results Let’s run the training loop and observe what happens. We use a learning rate of \\(10^{-3}\\) and a reward discount rate of \\(\\gamma=0.9\\). The whole thing runs really quickly even on a modern laptop CPU; the results below took perhaps a minute or two to produce.\nPlots of win rate, entropy, policy loss and game length over our first self-play training run.\nHere I had the monitoring framework produce four plots:\nWin rate: This is the fraction of games won by model. The win rate does increase initially, indicating that the model might be learning some basic patterns. New data is added to the plot every 20 batches, and you can clearly see that at every fifth data point, corresponding to the 100 batches per epoch, the win rate shows a sharp spike back down towards 50%. This is expected since we start playing against a new identical checkpoint of our model at those intervals. What is not expected is the win rate flatlining at 50% at the end of the run.\nEntropy: In essence, the amount of randomness exhibited by the model. We’ll go into more detail on this later. For now, observe that it tapers off at a level close to zero towards the end. This means that the model is now behaving almost completely deterministically without any random exploration.\nPolicy loss: This is just the loss function of the REINFORCE algorithm. It certainly looks very noisy and there’s no clear downward trend, but in fact this is not too unusual for this method; the basic REINFORCE algorithm is known for its noisy gradients and high variance. Unlike in a standard ML application, where we are aiming at a fixed target (our dataset), during self-play our opponent is rapidly changing, and we are also constantly exploring new parts of the game tree even if our opponent remains relatively steady; therefore even a noisy but overall flat policy loss curve doesn’t necessarily mean that the model has stopped learning anything useful. All in all I would consider this the least concerning out of the four plots.\nGame length: This is the average number of moves played by model, so the total number of moves per game is roughly double that. Just like the win rate, this completely flattens out at a fixed value of 4.5 towards the end of the run.\nWhat went wrong So what happened here? The model quickly collapsed into a state where the optimizer had squeezed all the randomness (or entropy) out of it, long before it had time to explore the game tree enough to learn how to play well. It essentially found a very poor local minimum where it had “learned” to play one and the same game over and over against itself, picking up a win as the first player and a loss as the second player, which explains the win rate sitting precisely at 50%.\nThis is the game it kept replaying like a broken record:\nYou can see that the game is nine moves long and ends in a quick win for the first player, which explains the average game length (for one player) ending up at 4.5 moves.\nThis example shows immediately why having good monitoring is crucial: if we had, say, only a loss plot, we would have no idea of what went wrong here; in fact, we might not even realize that there is something terminally wrong and waste a lot of time training a broken model.\nThe policy network getting stuck in such a poor local minimum without any hope of making it out is known as policy collapse, and we’ll look at ways to avoid it in the next post.\n",
+  "wordCount" : "1333",
+  "inLanguage": "en",
+  "datePublished": "2025-04-21T17:45:00+02:00",
+  "dateModified": "2025-04-21T17:45:00+02:00",
+  "author":{
+    "@type": "Person",
+    "name": "cfh"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://c-f-h.github.io/post/policy-collapse/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "cfh::blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://c-f-h.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://c-f-h.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://c-f-h.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/post/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      A First Training Run and Policy Collapse
+    </h1>
+    <div class="post-meta"><span title='2025-04-21 17:45:00 +0200 CEST'>April 21, 2025</span>&nbsp;·&nbsp;cfh
+
+</div>
+  </header> 
+  <div class="post-content"><p>With the <a href="/post/the-reinforce-algorithm/">REINFORCE algorithm</a> under our belt,
+we can finally attempt to start training some models for
+<a href="/post/connect-zero/">Connect 4</a>.
+However, as we&rsquo;ll see, there are still some hurdles in our way before we get anywhere.
+It&rsquo;s good to set your expectations accordingly because rarely if ever do things go
+smoothly the first time in RL.</p>
+<h2 id="a-simple-mlp-model">A simple MLP model<a hidden class="anchor" aria-hidden="true" href="#a-simple-mlp-model">#</a></h2>
+<p>As a fruitfly of Connect 4-playing models, let&rsquo;s start with a simple multilayer perceptron
+(MLP) model that follows the <a href="/post/basic-setup-and-play/">model protocol</a> we
+outlined earlier: that means that it has an input layer taking a 6x7 <code>int8</code> board state
+tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation
+function each, and an output layer of 7 neurons without any activation function&mdash;that&rsquo;s
+exactly what we meant earlier when we said that the model should output raw logits.</p>
+<p>That&rsquo;s straightforward to describe in PyTorch:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">SimpleMLPModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Create a simple MLP model for Connect4.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">ROWS</span> <span class="o">*</span> <span class="n">COLS</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">COLS</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">])</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># Store original shape and determine batch size</span>
+</span></span><span class="line"><span class="cl">        <span class="n">original_shape</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>              <span class="c1"># -&gt; (1, 6, 7)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>  <span class="c1"># Ensure input is float32</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">x</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># If the original input was a single instance, remove the batch dimension</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>                <span class="c1"># -&gt; (7,)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">x</span>
+</span></span></code></pre></div><p>There&rsquo;s some extra code in the <code>forward</code> method which just makes sure that our model can
+deal both with a single board input with shape <code>(6, 7)</code> as well as with a batch of boards,
+<code>(B, 6, 7)</code>.</p>
+<p>For a strong board-game playing model, we&rsquo;ll want at least a few convolution layers
+later on, but as we&rsquo;ll see shortly, playing strength is not the first thing we have to worry
+about.</p>
+<h2 id="the-self-play-loop">The self-play loop<a hidden class="anchor" aria-hidden="true" href="#the-self-play-loop">#</a></h2>
+<p>Let&rsquo;s write the self-play loop. It&rsquo;s common in this type of training to have the
+model play not against its current &ldquo;live&rdquo; version, but to take checkpoints of it at
+regular intervals and have it compete against that.
+So we have the live <code>model</code> and its checkpointed version <code>model_cp</code> against which
+the main model plays, and we copy the weights over from the former to the latter at
+regular intervals.</p>
+<p>We&rsquo;ll run 50 games per batch, where we have to make sure that each model gets to move
+first an equal number of times since the first player has a significant advantage in
+Connect 4. (Strictly speaking, <a href="https://en.wikipedia.org/wiki/Connect_Four#Mathematical_solution">Connect 4 is a solved game</a>&mdash;under perfect play the first player always
+wins.) We have a function <code>play_multiple_against_model</code> which lets each model go first
+equally and also collects the needed information for REINFORCE (states, actions, and
+returns) discussed in the previous post.
+Then, every 100 batches (what we somewhat arbitrarily call an epoch here),
+we update the checkpoint model and save it to disk for good measure.</p>
+<p>Here&rsquo;s the code for the self-play loop:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">self_play_loop</span><span class="p">(</span><span class="n">model_constructor</span><span class="p">,</span> <span class="n">games_per_batch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">batches_per_epoch</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">learning_rate</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">cp_file</span><span class="o">=</span><span class="s2">&#34;last_cp.pth&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># Create two copies of the model</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="n">model_constructor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">model_cp</span> <span class="o">=</span> <span class="n">model_constructor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># initialize the Adam optimizer</span>
+</span></span><span class="line"><span class="cl">    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># ----------------- MAIN TRAINING LOOP ----------------- #</span>
+</span></span><span class="line"><span class="cl">    <span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">batchnr</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batches_per_epoch</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># play a batch of games</span>
+</span></span><span class="line"><span class="cl">            <span class="n">board_states</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">returns</span> <span class="o">=</span> <span class="n">play_multiple_against_model</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">model</span><span class="p">,</span> <span class="n">model_cp</span><span class="p">,</span> <span class="n">num_games</span><span class="o">=</span><span class="n">games_per_batch</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># apply the REINFORCE policy update rule</span>
+</span></span><span class="line"><span class="cl">            <span class="n">update_policy</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">board_states</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">returns</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">batchnr</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">19</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Batch </span><span class="si">{</span><span class="n">batchnr</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="n">batches_per_epoch</span><span class="si">}</span><span class="s2"> done.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Save model state to a checkpoint file</span>
+</span></span><span class="line"><span class="cl">        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span>
+</span></span><span class="line"><span class="cl">            <span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="s1">&#39;optimizer_state_dict&#39;</span><span class="p">:</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span> <span class="n">cp_file</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Copy the model state to the checkpoint model</span>
+</span></span><span class="line"><span class="cl">        <span class="n">model_cp</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2"> done. Model saved to </span><span class="si">{</span><span class="n">cp_file</span><span class="si">}</span><span class="s2">.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">DEVICE</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&#34;cpu&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">self_play_loop</span><span class="p">(</span><span class="n">SimpleMLPModel</span><span class="p">,</span> <span class="n">games_per_batch</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">batches_per_epoch</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cp_file</span><span class="o">=</span><span class="s2">&#34;last_cp.pth&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><p>There&rsquo;s something very important missing here: monitoring and plotting.
+We won&rsquo;t get far in RL without extensive monitoring because things
+<strong>will</strong> go wrong in totally unexpected ways, and we won&rsquo;t even know what&rsquo;s wrong if
+we don&rsquo;t have the capability to plot all kinds of quantities of interest.</p>
+<p>The actual code in the repo for this project does have <code>matplotlib</code>-based
+visualization which I stripped out for the example code here because it&rsquo;s essentially
+plumbing and not that interesting. Just keep in mind that you do need it. You could
+always use <a href="https://www.tensorflow.org/tensorboard">tensorboard</a>, for example.</p>
+<h2 id="the-results">The results<a hidden class="anchor" aria-hidden="true" href="#the-results">#</a></h2>
+<p>Let&rsquo;s run the training loop and observe what happens. We use a learning rate of
+\(10^{-3}\) and a reward discount rate of \(\gamma=0.9\).
+The whole thing runs really quickly even on a modern laptop CPU; the results below
+took perhaps a minute or two to produce.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="collapse.png#center"
+         alt="Training plots of a policy collapse situation"/> <figcaption>
+            <p>Plots of win rate, entropy, policy loss and game length over our first self-play training run.</p>
+        </figcaption>
+</figure>
+
+<p>Here I had the monitoring framework produce four plots:</p>
+<ul>
+<li>
+<p><strong>Win rate:</strong> This is the fraction of games won by <code>model</code>.
+The win rate does increase initially, indicating that the model might be learning some
+basic patterns. New data is added to the plot every 20 batches, and you
+can clearly see that at every fifth data point, corresponding to the 100 batches per
+epoch, the win rate shows a sharp spike back down towards 50%. This is expected since
+we start playing against a new identical checkpoint of our model at those intervals.
+What is not expected is the win rate flatlining at 50% at the end of the run.</p>
+</li>
+<li>
+<p><strong>Entropy:</strong> In essence, the amount of randomness exhibited by the model. We&rsquo;ll go
+into more detail on this later.
+For now, observe that it tapers off at a level close to zero towards the end.
+This means that the model is now behaving almost completely deterministically
+without any random exploration.</p>
+</li>
+<li>
+<p><strong>Policy loss:</strong> This is just the loss function of the <a href="/post/the-reinforce-algorithm/">REINFORCE algorithm</a>. It certainly looks very noisy and there&rsquo;s no clear downward
+trend, but in fact this is not too unusual for this method; the basic REINFORCE algorithm
+is known for its noisy gradients and high variance. Unlike in a standard ML application,
+where we are aiming at a fixed target (our dataset), during self-play our opponent is
+rapidly changing, and we are also constantly exploring new parts of the game tree even
+if our opponent remains relatively steady; therefore even a noisy but overall flat policy
+loss curve doesn&rsquo;t necessarily mean that the model has stopped learning anything useful.
+All in all I would consider this the least concerning out of the four plots.</p>
+</li>
+<li>
+<p><strong>Game length:</strong> This is the average number of moves played by <code>model</code>,
+so the total number of moves per game is roughly double that. Just like the win rate, this
+completely flattens out at a fixed value of 4.5 towards the end of the run.</p>
+</li>
+</ul>
+<h2 id="what-went-wrong">What went wrong<a hidden class="anchor" aria-hidden="true" href="#what-went-wrong">#</a></h2>
+<p>So what happened here? The model quickly collapsed into a state where the optimizer had
+squeezed all the randomness (or entropy) out of it, long before it had time to explore the
+game tree enough to learn how to play well. It essentially found a very poor local minimum
+where it had &ldquo;learned&rdquo; to play one and the same game over and over against itself,
+picking up a win as the first player and a loss as the second player, which explains
+the win rate sitting precisely at 50%.</p>
+<p>This is the game it kept replaying like a broken record:</p>
+<div id="game-container" class="connect4-container"
+    data-human="-1" data-cpu="-1"
+    data-movelist="[2, 2, 3, 2, 2, 2, 5, 2, 4]">
+</div>
+<p>You can see that the game is nine moves long and ends in a quick win for the first player,
+which explains the average game length (for one player) ending up at 4.5 moves.</p>
+<p>This example shows immediately why having good monitoring is crucial: if we had, say,
+only a loss plot, we would have no idea of what went wrong here; in fact, we might not
+even realize that there is something terminally wrong and waste a lot of time training
+a broken model.</p>
+<p>The policy network getting stuck in such a poor local minimum without any hope of making
+it out is known as <strong>policy collapse</strong>, and we&rsquo;ll look at ways to avoid it in the next post.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://c-f-h.github.io/tags/python/">Python</a></li>
+      <li><a href="https://c-f-h.github.io/tags/pytorch/">PyTorch</a></li>
+      <li><a href="https://c-f-h.github.io/tags/ml/">ML</a></li>
+      <li><a href="https://c-f-h.github.io/tags/rl/">RL</a></li>
+      <li><a href="https://c-f-h.github.io/tags/math/">Math</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://c-f-h.github.io/post/the-reinforce-algorithm/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>The REINFORCE Algorithm</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://c-f-h.github.io/">cfh::blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

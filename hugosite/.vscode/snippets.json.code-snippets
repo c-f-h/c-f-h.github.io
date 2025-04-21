@@ -25,4 +25,9 @@
 		"body": ["\\[\n    $0\n\\]"],
 		"description": "display math mode"
 	  },
+	  "Relref link": {
+		"prefix": ["RELREF"],
+		"body": ["[$1]({{< relref $2 >}})"],
+		"description": "relative link"
+	  },
 }

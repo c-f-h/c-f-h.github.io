@@ -20,13 +20,16 @@ Some ground rules:
 - The neural network model gets nothing but the current board state as a 6x7 grid and
   outputs a classifier over the seven columns for which move to play next.
 - Like AlphaZero, it doesn't train on any human games, but only on computer-generated ones.
-- Unlike AlphaZero, it doesn't do any tree seach to find the best moves, for two reasons:
+- Unlike AlphaZero, it doesn't do any tree seach to find the best moves, for multiple
+  reasons:
   for simplicity, and because I was curious to see how far you could get with a
   simple move predictor. In fact, there's precedent to show that even for Chess, a vastly
   more complicated game, this can work well: see the DeepMind paper
   [Grandmaster-Level Chess Without Search](https://arxiv.org/pdf/2402.04494v1), which
   trained a pure next-move predictor for Chess. However, they used Stockfish as a teacher
   for their model, rather than self-play.
+  I also strongly suspect that Connect 4 is shallow enough that tree search might
+  trivialize it, and that wouldn't leave much room for any interesting RL.
 - Build it from scratch in PyTorch, without relying on any existing RL framework. The
   point is to learn about the techniques more than just getting to the end.
 

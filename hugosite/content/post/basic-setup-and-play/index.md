@@ -126,7 +126,8 @@ def play(model1, model2):
             model1, model2 = model2, model1 # Swap models for the next turn
 ```
 
-There is another terminal condition we have to check for here: if the entire board
+There is another terminal condition we have to check for here: if there was no win but
+the entire board
 got filled up, which we check for by simply examining the top row, the game ended in a draw.
 
 We now have the basic mechanism for self-play set up and can generate any number of
@@ -136,16 +137,17 @@ basic game loop above a bit but it's still pretty straightforward.
 
 Another simple extension of this function we will need for training is that
 it should be able to return not just the final result, but a full list of all encountered
-board states, the moves that the model made in those states, and a vector of rewards which
+board states, the moves that the model made in those states, and a vector of "returns" which
 indicates if the model won or lost the game. So after playing one or a batch of games,
 we'll get three tensors
 
 ```
     all_states:   (N, 6, 7)    dtype=torch.int8
     all_moves:    (N,)         dtype=torch.long
-    all_rewards:  (N,)         dtype=torch.float32
+    all_returns:  (N,)         dtype=torch.float32
 ```
 
 Here ``N`` is the total number of moves the model made across all games played.
-We'll talk about the exact form the rewards take later on, but for now just think
+We'll talk about the exact form the returns take
+[in the next post]({{< relref the-reinforce-algorithm >}}), but for now just think
 of them as being +1 for a win, 0 for a draw, and -1 for a loss.

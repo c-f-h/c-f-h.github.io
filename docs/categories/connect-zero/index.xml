@@ -6,8 +6,27 @@
     <description>Recent content in Connect-Zero on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 20 Apr 2025 20:29:21 +0200</lastBuildDate>
+    <lastBuildDate>Mon, 21 Apr 2025 17:45:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/categories/connect-zero/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A First Training Run and Policy Collapse</title>
+      <link>https://c-f-h.github.io/post/policy-collapse/</link>
+      <pubDate>Mon, 21 Apr 2025 17:45:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/policy-collapse/</guid>
+      <description>&lt;p&gt;With the &lt;a href=&#34;https://c-f-h.github.io/post/the-reinforce-algorithm/&#34;&gt;REINFORCE algorithm&lt;/a&gt; under our belt,
+we can finally attempt to start training some models for
+&lt;a href=&#34;https://c-f-h.github.io/post/connect-zero/&#34;&gt;Connect 4&lt;/a&gt;.
+However, as we&amp;rsquo;ll see, there are still some hurdles in our way before we get anywhere.
+It&amp;rsquo;s good to set your expectations accordingly because rarely if ever do things go
+smoothly the first time in RL.&lt;/p&gt;
+&lt;h2 id=&#34;a-simple-mlp-model&#34;&gt;A simple MLP model&lt;/h2&gt;
+&lt;p&gt;As a fruitfly of Connect 4-playing models, let&amp;rsquo;s start with a simple multilayer perceptron
+(MLP) model that follows the &lt;a href=&#34;https://c-f-h.github.io/post/basic-setup-and-play/&#34;&gt;model protocol&lt;/a&gt; we
+outlined earlier: that means that it has an input layer taking a 6x7 &lt;code&gt;int8&lt;/code&gt; board state
+tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation
+function each, and an output layer of 7 neurons without any activation function&amp;mdash;that&amp;rsquo;s
+exactly what we meant earlier when we said that the model should output raw logits.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>The REINFORCE Algorithm</title>
       <link>https://c-f-h.github.io/post/the-reinforce-algorithm/</link>
