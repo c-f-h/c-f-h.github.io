@@ -175,6 +175,20 @@ all my own.</p>
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">On Entropy
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>The last time, we ran our first self-play training loop on a simple MLP model and observed catastrophic policy collapse. Let’s first understand some of the math behind what happened, and then how to combat it.
+What is entropy? Given a probability distribution \(p=(p_1,\ldots,p_C)\) over a number of categories \(i=1,\ldots,C\), such as the distribution over the columns our Connect 4 model outputs for a given board state, entropy measures the “amount of randomness” and is defined as1
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-04-23 20:57:00 +0200 CEST'>April 23, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to On Entropy" href="https://c-f-h.github.io/post/on-entropy/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">A First Training Run and Policy Collapse
     </h2>
   </header>
@@ -299,19 +313,12 @@ Subdivide the curved triangle into smaller subtriangles Find potentially interse
   <footer class="entry-footer"><span title='2025-04-07 17:52:07 +0200 CEST'>April 7, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Computing Self-Intersections, the Geometric Way" href="https://c-f-h.github.io/post/computing-intersections/"></a>
 </article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">The Curved Triangle Problem
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>As the starting point for a little machine learning project, I chose the following geometric problem. We are given a curved triangle in 3D space. It’s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges. These coefficients are interpreted as control points of a quadratic triangular Bezier surface. Such representations are commonly used in CAD systems to represent curved surfaces. Mathematically speaking, we map parameters \((u,v)\) which lie in the parameter-space triangle \( 0 \le u, v;\ u&#43;v \le 1\) to
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-06 21:06:14 +0200 CEST'>April 6, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to The Curved Triangle Problem" href="https://c-f-h.github.io/post/the-triangle-problem/"></a>
-</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="next" href="https://c-f-h.github.io/page/2/">Next&nbsp;&nbsp;»
+    </a>
+  </nav>
+</footer>
     </main>
     
 <footer class="footer">

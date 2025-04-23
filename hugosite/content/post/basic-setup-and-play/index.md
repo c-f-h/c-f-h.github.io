@@ -40,13 +40,16 @@ After a move has been made, we simply flip the board by doing
 Any model that wants to play a game of Connect 4 will have to follow a simple protocol:
 it takes in the current board state as described above and outputs a `float32` tensor of
 seven numbers which represent the probability of playing a move in each of the seven 
-columns.
-The output here is in raw logits, that is, arbitrary numbers between minus and plus
-infinity. To convert these to probabilities, we use the
+columns. A model which takes in a state and outputs a recommended action is called
+a **policy model** in RL parlance.
+
+We will keep the model output in raw logits, that is, arbitrary numbers between minus and
+plus infinity, with no activation function applied to them.
+To convert these to probabilities, we use the
 [softmax operator](https://en.wikipedia.org/wiki/Softmax_function) which applies
 an exponential function to each number and then normalizes them to add up to 1.
-Finally, we choose a move by sampling from the resulting random distribution over the
-seven columns.
+Finally, we choose a move by sampling from the resulting random distribution
+\((p_1, p_2, \ldots, p_7)\) over the seven columns.
 
 There is one slight complication: once a column is full, i.e., ``board[0, c] != 0``,
 it's no longer valid to play a

@@ -6,8 +6,22 @@
     <description>Recent content in Connect-Zero on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 21 Apr 2025 17:45:00 +0200</lastBuildDate>
+    <lastBuildDate>Wed, 23 Apr 2025 20:57:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/categories/connect-zero/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>On Entropy</title>
+      <link>https://c-f-h.github.io/post/on-entropy/</link>
+      <pubDate>Wed, 23 Apr 2025 20:57:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/on-entropy/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://c-f-h.github.io/post/policy-collapse/&#34;&gt;The last time&lt;/a&gt;, we ran our first self-play training loop
+on a simple MLP model and observed catastrophic policy collapse. Let&amp;rsquo;s first understand
+some of the math behind what happened, and then how to combat it.&lt;/p&gt;
+&lt;h2 id=&#34;what-is-entropy&#34;&gt;What is entropy?&lt;/h2&gt;
+&lt;p&gt;Given a probability distribution \(p=(p_1,\ldots,p_C)\)
+over a number of categories \(i=1,\ldots,C\), such as the distribution over the columns our
+Connect 4 model outputs for a given board state, entropy measures the &amp;ldquo;amount of
+randomness&amp;rdquo; and is defined as&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;</description>
+    </item>
     <item>
       <title>A First Training Run and Policy Collapse</title>
       <link>https://c-f-h.github.io/post/policy-collapse/</link>

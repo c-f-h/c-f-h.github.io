@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Connect-Zero | cfh::blog</title>
+<title>Posts | cfh::blog</title>
 <meta name="keywords" content="">
-<meta name="description" content="Notes on personal projects">
+<meta name="description" content="Posts - cfh::blog">
 <meta name="author" content="cfh">
-<link rel="canonical" href="https://c-f-h.github.io/categories/connect-zero/">
+<link rel="canonical" href="https://c-f-h.github.io/post/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
@@ -18,8 +18,8 @@
 <link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://c-f-h.github.io/categories/connect-zero/index.xml">
-<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/categories/connect-zero/">
+<link rel="alternate" type="application/rss+xml" href="https://c-f-h.github.io/post/index.xml">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/">
 <noscript>
     <style>
         #theme-toggle,
@@ -73,16 +73,31 @@
   
   
   
-</head><meta property="og:url" content="https://c-f-h.github.io/categories/connect-zero/">
+</head><meta property="og:url" content="https://c-f-h.github.io/post/">
   <meta property="og:site_name" content="cfh::blog">
-  <meta property="og:title" content="Connect-Zero">
+  <meta property="og:title" content="Posts">
   <meta property="og:description" content="Notes on personal projects">
   <meta property="og:locale" content="en-us">
   <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Connect-Zero">
+<meta name="twitter:title" content="Posts">
 <meta name="twitter:description" content="Notes on personal projects">
 
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://c-f-h.github.io/post/"
+    }
+  ]
+}
+</script>
 </head>
 
 <body class="list" id="top">
@@ -139,94 +154,31 @@
     </nav>
 </header>
 <main class="main"> 
-<header class="page-header"><div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/categories/">Categories</a></div>
+<header class="page-header"><div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a></div>
   <h1>
-    Connect-Zero
+    Posts
   </h1>
 </header>
 
-<article class="post-entry tag-entry"> 
+<article class="post-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">On Entropy
+    <h2 class="entry-hint-parent">The Curved Triangle Problem
     </h2>
   </header>
   <div class="entry-content">
-    <p>The last time, we ran our first self-play training loop on a simple MLP model and observed catastrophic policy collapse. Let’s first understand some of the math behind what happened, and then how to combat it.
-What is entropy? Given a probability distribution \(p=(p_1,\ldots,p_C)\) over a number of categories \(i=1,\ldots,C\), such as the distribution over the columns our Connect 4 model outputs for a given board state, entropy measures the “amount of randomness” and is defined as1
+    <p>As the starting point for a little machine learning project, I chose the following geometric problem. We are given a curved triangle in 3D space. It’s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges. These coefficients are interpreted as control points of a quadratic triangular Bezier surface. Such representations are commonly used in CAD systems to represent curved surfaces. Mathematically speaking, we map parameters \((u,v)\) which lie in the parameter-space triangle \( 0 \le u, v;\ u&#43;v \le 1\) to
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-23 20:57:00 +0200 CEST'>April 23, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to On Entropy" href="https://c-f-h.github.io/post/on-entropy/"></a>
+  <footer class="entry-footer"><span title='2025-04-06 21:06:14 +0200 CEST'>April 6, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to The Curved Triangle Problem" href="https://c-f-h.github.io/post/the-triangle-problem/"></a>
 </article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">A First Training Run and Policy Collapse
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>With the REINFORCE algorithm under our belt, we can finally attempt to start training some models for Connect 4. However, as we’ll see, there are still some hurdles in our way before we get anywhere. It’s good to set your expectations accordingly because rarely if ever do things go smoothly the first time in RL.
-A simple MLP model As a fruitfly of Connect 4-playing models, let’s start with a simple multilayer perceptron (MLP) model that follows the model protocol we outlined earlier: that means that it has an input layer taking a 6x7 int8 board state tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation function each, and an output layer of 7 neurons without any activation function—that’s exactly what we meant earlier when we said that the model should output raw logits.
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-21 17:45:00 +0200 CEST'>April 21, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to A First Training Run and Policy Collapse" href="https://c-f-h.github.io/post/policy-collapse/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">The REINFORCE Algorithm
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Let’s say we have a Connect 4-playing model and we let it play a couple of games. (We haven’t really talked about model architecture until now, so for now just imagine a simple multilayer perceptron with a few hidden layers which outputs 7 raw logits, as discussed in the previous post.)
-As it goes in life, our model wins some and loses some. How do we make it actually learn from its experiences? How does the magic happen?
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-20 20:29:21 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to The REINFORCE Algorithm" href="https://c-f-h.github.io/post/the-reinforce-algorithm/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Basic Setup and Play
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Let’s get into a bit more technical detail on how our Connect 4-playing model will be set up, and how a basic game loop works. Throughout all code samples we’ll always assume the standard PyTorch imports:
-import torch import torch.nn as nn import torch.nn.functional as F Board state The current board state will be represented by a 6x7 PyTorch int8 tensor, initially filled with zeros.
-board = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE) The board is ordered such that board[0, :] is the top row. A non-empty cell is represented by &#43;1 or -1. To simplify things, we always represent the player whose move it currently is by &#43;1, and the opponent by -1. This way we don’t need any separate state to keep track of whose move it is. After a move has been made, we simply flip the board by doing
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-20 15:35:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Basic Setup and Play" href="https://c-f-h.github.io/post/basic-setup-and-play/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Connect-Zero: Reinforcement Learning from Scratch
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>For a long time I’ve wanted to get deeper into reinforcement learning (RL), and the project I finally settled on is teaching a neural network model how to play the classic game Connect 4 (pretty sneaky, sis!). Obviously, the name “Connect-Zero” is a cheeky nod to AlphaGo Zero and AlphaZero by DeepMind. I chose Connect 4 because it’s a simple game everyone knows how to play where we can hope to achieve good results without expensive hardware and high training costs.
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-20 13:12:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Connect-Zero: Reinforcement Learning from Scratch" href="https://c-f-h.github.io/post/connect-zero/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Connect 4
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p> The computer opponent is a neural network trained using reinforcement learning. It was exported to ONNX and now runs right here in your browser. See Connect-Zero and the follow-up posts for details.
-</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-20 09:29:36 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Connect 4" href="https://c-f-h.github.io/post/connect-4/"></a>
-</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="prev" href="https://c-f-h.github.io/post/">
+      «&nbsp;Prev&nbsp;
+    </a>
+  </nav>
+</footer>
     </main>
     
 <footer class="footer">
