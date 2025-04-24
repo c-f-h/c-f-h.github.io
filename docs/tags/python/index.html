@@ -147,6 +147,21 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Entropy Regularization
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Based on our discussion on entropy, our plan is to implement entropy regularization via an entropy bonus in our loss function.
+Implementing the entropy bonus The formula for entropy which we have to implement,
+\[H(p) = -\sum_{i=1}^{C} p_i \log p_i,\]is simple enough: multiply the probabilities for the seven possible moves with their log-probabilities, sum and negate. However, there is one numerical problem we have to worry about: masking out an illegal move \(i\) leads to a zero probability \(p_i=0\) and a log-probability \(\log p_i = -\infty\). However, due to the rules of IEEE 754 floating point numbers, multiplying zero with \(\pm\infty\) is undefined and therefore results in NaN (not a number). For the entropy formula, however, the contribution should be 0.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-04-24 20:15:00 +0200 CEST'>April 24, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to Entropy Regularization" href="https://c-f-h.github.io/post/entropy-regularization/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">A First Training Run and Policy Collapse
     </h2>
   </header>

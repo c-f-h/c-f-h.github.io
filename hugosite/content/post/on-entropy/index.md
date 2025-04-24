@@ -191,5 +191,5 @@ against probabilities dropping to zero.
 
 ## Outlook
 
-All right, this was a bit more of a math-heavy post; next time we'll implement the
+All right, this was a bit more of a math-heavy post; [next time]({{< relref entropy-regularization >}}) we'll implement the
 entropy bonus and run another experiment.

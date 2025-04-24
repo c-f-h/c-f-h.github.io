@@ -6,8 +6,27 @@
     <description>Recent content in PyTorch on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 21 Apr 2025 17:45:00 +0200</lastBuildDate>
+    <lastBuildDate>Thu, 24 Apr 2025 20:15:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/pytorch/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Entropy Regularization</title>
+      <link>https://c-f-h.github.io/post/entropy-regularization/</link>
+      <pubDate>Thu, 24 Apr 2025 20:15:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/entropy-regularization/</guid>
+      <description>&lt;p&gt;Based on our &lt;a href=&#34;https://c-f-h.github.io/post/on-entropy/&#34;&gt;discussion on entropy&lt;/a&gt;, our plan is to implement
+entropy regularization via an entropy bonus in our loss function.&lt;/p&gt;
+&lt;h2 id=&#34;implementing-the-entropy-bonus&#34;&gt;Implementing the entropy bonus&lt;/h2&gt;
+&lt;p&gt;The formula for entropy which we have to implement,&lt;/p&gt;
+\[
+    H(p) = -\sum_{i=1}^{C} p_i \log p_i,
+\]&lt;p&gt;is simple enough: multiply the probabilities for the seven possible moves with their
+log-probabilities, sum and negate. However, there is one numerical problem we
+have to worry about: masking out an illegal move \(i\) leads to a zero probability
+\(p_i=0\) and a log-probability \(\log p_i = -\infty\). However, due to the rules of
+IEEE 754 floating point numbers, multiplying zero with \(\pm\infty\) is undefined and
+therefore results in NaN (not a number). For the entropy formula, however, the
+contribution should be 0.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>A First Training Run and Policy Collapse</title>
       <link>https://c-f-h.github.io/post/policy-collapse/</link>

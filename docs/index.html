@@ -175,6 +175,21 @@ all my own.</p>
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Entropy Regularization
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Based on our discussion on entropy, our plan is to implement entropy regularization via an entropy bonus in our loss function.
+Implementing the entropy bonus The formula for entropy which we have to implement,
+\[H(p) = -\sum_{i=1}^{C} p_i \log p_i,\]is simple enough: multiply the probabilities for the seven possible moves with their log-probabilities, sum and negate. However, there is one numerical problem we have to worry about: masking out an illegal move \(i\) leads to a zero probability \(p_i=0\) and a log-probability \(\log p_i = -\infty\). However, due to the rules of IEEE 754 floating point numbers, multiplying zero with \(\pm\infty\) is undefined and therefore results in NaN (not a number). For the entropy formula, however, the contribution should be 0.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-04-24 20:15:00 +0200 CEST'>April 24, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to Entropy Regularization" href="https://c-f-h.github.io/post/entropy-regularization/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">On Entropy
     </h2>
   </header>
@@ -297,21 +312,6 @@ To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) an
   </div>
   <footer class="entry-footer"><span title='2025-04-08 08:33:00 +0200 CEST'>April 8, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Getting Accurate Intersections with Gauss-Newton" href="https://c-f-h.github.io/post/refining-intersections/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Computing Self-Intersections, the Geometric Way
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Before we can apply ML to the triangle problem, we need to be able to compute self-intersections of a curved triangle in an accurate and efficient way so that we can generate enough training data.
-The basic approach is:
-Subdivide the curved triangle into smaller subtriangles Find potentially intersecting pairs of subtriangles Check for actual intersections among these candidate pairs Subdividing the triangle We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-07 17:52:07 +0200 CEST'>April 7, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Computing Self-Intersections, the Geometric Way" href="https://c-f-h.github.io/post/computing-intersections/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">
