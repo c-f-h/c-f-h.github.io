@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Model Design for Connect 4 | cfh::blog</title>
+<meta name="keywords" content="Python, PyTorch">
+<meta name="description" content="With the fearsome RandomPunisher putting our
+first Connect 4 toy model
+in its place, it&rsquo;s time to design something that stands a chance.
+A design based on CNNs
+It&rsquo;s standard practice for board-game playing neural networks to have at least a few
+convolutional neural network (CNN) layers at the initial inputs. This shouldn&rsquo;t come as
+a surprise: the board is a regular grid, much like an image, and CNNs are strong performers
+in image processing. In our case, it will allow the model to learn features like
+&ldquo;here are three of my pieces in a diagonal downward row&rdquo; which are then automatically
+applied to every position on the board, rather than having to re-learn these features
+individually at each board position.">
+<meta name="author" content="cfh">
+<link rel="canonical" href="https://c-f-h.github.io/post/model-design/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://c-f-h.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://c-f-h.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/model-design/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><head>
+  
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  
+      inlineMath: [['\\(', '\\)']]                  
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+</script>
+  
+  
+  
+</head><meta property="og:url" content="https://c-f-h.github.io/post/model-design/">
+  <meta property="og:site_name" content="cfh::blog">
+  <meta property="og:title" content="Model Design for Connect 4">
+  <meta property="og:description" content="With the fearsome RandomPunisher putting our first Connect 4 toy model in its place, it’s time to design something that stands a chance.
+A design based on CNNs It’s standard practice for board-game playing neural networks to have at least a few convolutional neural network (CNN) layers at the initial inputs. This shouldn’t come as a surprise: the board is a regular grid, much like an image, and CNNs are strong performers in image processing. In our case, it will allow the model to learn features like “here are three of my pieces in a diagonal downward row” which are then automatically applied to every position on the board, rather than having to re-learn these features individually at each board position.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2025-04-28T22:30:00+02:00">
+    <meta property="article:modified_time" content="2025-04-28T22:30:00+02:00">
+    <meta property="article:tag" content="Python">
+    <meta property="article:tag" content="PyTorch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Model Design for Connect 4">
+<meta name="twitter:description" content="With the fearsome RandomPunisher putting our
+first Connect 4 toy model
+in its place, it&rsquo;s time to design something that stands a chance.
+A design based on CNNs
+It&rsquo;s standard practice for board-game playing neural networks to have at least a few
+convolutional neural network (CNN) layers at the initial inputs. This shouldn&rsquo;t come as
+a surprise: the board is a regular grid, much like an image, and CNNs are strong performers
+in image processing. In our case, it will allow the model to learn features like
+&ldquo;here are three of my pieces in a diagonal downward row&rdquo; which are then automatically
+applied to every position on the board, rather than having to re-learn these features
+individually at each board position.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://c-f-h.github.io/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Model Design for Connect 4",
+      "item": "https://c-f-h.github.io/post/model-design/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Model Design for Connect 4",
+  "name": "Model Design for Connect 4",
+  "description": "With the fearsome RandomPunisher putting our first Connect 4 toy model in its place, it\u0026rsquo;s time to design something that stands a chance.\nA design based on CNNs It\u0026rsquo;s standard practice for board-game playing neural networks to have at least a few convolutional neural network (CNN) layers at the initial inputs. This shouldn\u0026rsquo;t come as a surprise: the board is a regular grid, much like an image, and CNNs are strong performers in image processing. In our case, it will allow the model to learn features like \u0026ldquo;here are three of my pieces in a diagonal downward row\u0026rdquo; which are then automatically applied to every position on the board, rather than having to re-learn these features individually at each board position.\n",
+  "keywords": [
+    "Python", "PyTorch"
+  ],
+  "articleBody": "With the fearsome RandomPunisher putting our first Connect 4 toy model in its place, it’s time to design something that stands a chance.\nA design based on CNNs It’s standard practice for board-game playing neural networks to have at least a few convolutional neural network (CNN) layers at the initial inputs. This shouldn’t come as a surprise: the board is a regular grid, much like an image, and CNNs are strong performers in image processing. In our case, it will allow the model to learn features like “here are three of my pieces in a diagonal downward row” which are then automatically applied to every position on the board, rather than having to re-learn these features individually at each board position.\nThis isn’t the place for me to go into a full-blown writeup on convolutional neural networks, but the idea is to learn small matrices or tensors called kernels which slide over the input image and transform each local neighborhood of pixels in the same way. This saves parameters compared to a fully connected layer and allows the model to learn uniform features which apply all over the board.\nHave a look at this diagram, which shows a 3x3 kernel being moved diagonally over our game board with one cell for padding on each side:\nSix instances of a 3x3 convolution kernel being overlaid on the game board\rwith one cell of padding on every side.\nThe architecture of the network is relatively standard and in part inspired by the AlphaZero model: it uses an initial convolutional layer, then three residual blocks consisting of two convolutional layers each, a pooling layer, and finally a MLP head with two hidden fully connected layers with 128 neurons each. As the activation function we use ReLU throughout.\nInitial feature extraction To help our model out a bit, we separate the original board out into three input channels: one for our pieces, one for the opponent’s pieces, and one for empty cells. Each of these channels will have 1 for the corresponding feature and 0 otherwise.\nThe number of channels is an important parameter to tune depending on the complexity of the problem. Since Connect-4 isn’t that complicated, 64 channels are probably sufficient; for comparison, AlphaZero uses 256 channels on each CNN layer.\nEach convolutional layer uses 64 channels, a kernel size of 3x3, and padding 1. These are standard settings which ensure that the output has the same dimensions as the input.1\nThe very first convolutional layer serves as a feature extractor and maps the three input channels to 64 output channels while keeping the board dimension at (6, 7).\nResidual blocks After that, we have three residual blocks. Each one of them consists of two conv layers with 64 input and output channels such that they maintain both the spatial dimension and the number of channels. The input to the residual block is added back in to the output of the second conv layer before the activation function, which is the defining feature of residual blocks. This both improves training robustness, because gradient information can flow “around” the block in addition to through it, and often gives the block an easier target to learn because it only needs to learn the deviation from the identity function. The schematic below shows the precise behavior of the data flow.\nAfterwards, we do some kind of pooling to reduce the number of features. We could do global or column-wise average pooling, but to give the model a bit more to work with, we instead use another convolutional downsampling layer: it has a kernel size of (6,1), meaning that each convolution kernel covers an entire column of the board. With padding 0, this means that our data is reduced from (64, 6, 7) to (64, 1, 7). This is illustrated in the following diagram:\nThe downsampling convolution with filter size (6,1) collapses an entire column into\rone value.\nMLP head This downsampled data is then flattened to a vector of length 64 * 7 = 448. To obtain the final output policy, we attach an MLP head consisting of three fully connected layers with output sizes 128, 128, and 7, respectively. The final layer doesn’t have an activation function since we want to output raw logits.\nNormalization Using some kind of layer normalization is usually a good idea as it makes the training process more robust. However, batch normalization, the most common choice, is not ideal here due to the way it interacts with an on-policy RL algorithm. BatchNorm behaves differently during training, where it uses the stats of the current batch, and evaluation (which we use to sample games), where it uses the collected aggregate stats to normalize the inputs. As discussed earlier, REINFORCE really relies on using the same distribution during play and training, and I observed significantly more noisy behavior when using BatchNorm.\nInstead, we use other popular options: for the conv layers, we use group normalization with a group size of 16, and for the fully connected layers layer normalization, which normalizes the activations of each sample with respect to itself only, without keeping any running stats. As is usual, we remove the bias term on conv and linear layers before normalization layers because those come with their own bias.\nHere’s a schematic of the entire network architecture:\nC F L L L o l i i i I b C G R C C C C C C D n a M n n n O n o o r e o o o o o o o v t L e e e u p a F n o L R n n R n n R n n w ( t P a a a t u r e v u U e v v e v v e v v n 6 e r r r p t d a ( p s ( ( s ( ( s ( ( s 4 n H ( ( ( u _ t 3 N B 6 6 B 6 6 B 6 6 a , e 4 1 1 t B t u , o l 4 4 l 4 4 l 4 4 m a 4 2 2 o o r r o , , o , , o , , p 6 d 8 8 8 L a _ e 6 m c 6 6 c 6 6 c 6 6 l 4 , , , o r c 4 ( k 4 4 k 4 4 k 4 4 i , g d h E , 1 ) ) ) ) ) ) n 1 1 7 i a x 6 1 + + 2 + + 3 + + g k 2 2 ) t S n t k , G G R G G R G G R = 8 8 s t n r = N N e N N e N N e ( ) ) a e a 3 6 + L + L + L 6 + + t l c , 4 R U R U R U , L L e s t ) e e e 1 N N i p L L L ) + + o = U U U ) R R n 1 e e ) L L U U [ [ [ [ [ [ [ [ [ [ B B B B B B B B B B , , , , , , , , , , 6 3 6 6 6 6 6 4 7 7 , , 4 4 4 4 4 4 ] ] , , , , , 8 7 6 ] ] , 6 6 6 6 1 , , , , , 7 ] 7 7 7 7 7 ] ] ] ] ] R R R e e e s s s i i i d d d u u u a a a l l l c c c o o o n n n n n n e e e c c c t t t i i i o o o n n n Schematic of the residual CNN architecture.\nThe network has a total of around 356k parameters. There are obvious ways we could tune this design later: the number of convolution filters, residual blocks, and depth and width of the MLP head are all parameters we could tweak to adjust model complexity.\nImplementation The model described above is straightforward to implement using standard PyTorch tools:\ndef board_to_channels(board: torch.Tensor) -\u003e torch.Tensor: \"\"\"Converts a board tensor (0=empty, 1=p1, -1=p2) to 3 channel representation.\"\"\" # Create channels: [batch, channels, rows, cols] channels = torch.zeros((board.size(0), 3, 6, 7), dtype=torch.float32, device=board.device) channels[:, 0, :, :] = (board == 1).float() # Current player's pieces channels[:, 1, :, :] = (board == -1).float() # Opponent's pieces channels[:, 2, :, :] = (board == 0).float() # Empty cells return channels class Connect4CNN_Mk4(nn.Module): \"\"\"CNN/ResNet model with global average pooling and MLP classifier head.\"\"\" def __init__(self): super().__init__() # Extract 64 feature channels from the 3 input channels of the board. self.feature_extractor = nn.Sequential( nn.Conv2d(3, 64, kernel_size=3, padding=1, bias=False), nn.GroupNorm(16, 64), nn.ReLU(), ) def make_resblock(): return nn.Sequential( nn.Conv2d(64, 64, kernel_size=3, padding=1, bias=False), nn.GroupNorm(16, 64), nn.ReLU(), nn.Conv2d(64, 64, kernel_size=3, padding=1, bias=False), nn.GroupNorm(16, 64), ) self.resblock1 = make_resblock() self.resblock2 = make_resblock() self.resblock3 = make_resblock() self.downsample = nn.Conv2d(64, 64, kernel_size=(6,1), stride=1, padding=0, bias=False) # Fully connected layers self.fc_layers = nn.Sequential( nn.Linear(64 * 7, 128, bias=False), nn.LayerNorm(128), nn.ReLU(), nn.Linear(128, 128, bias=False), nn.LayerNorm(128), nn.ReLU(), nn.Linear(128, 7), # output raw logits ) def forward(self, x: torch.Tensor) -\u003e torch.Tensor: original_shape = x.shape if x.ndim == 2: x = x.unsqueeze(0) # Add temporary batch dimension # Convert board to channel representation (3 channels) x = board_to_channels(x) # [B, 3, ROWS, COLS] x = self.feature_extractor(x) # [B, 64, ROWS, COLS] # Apply residual CNN blocks (note the \"+x\" connection before ReLU) x = F.relu(self.resblock1(x) + x) x = F.relu(self.resblock2(x) + x) x = F.relu(self.resblock3(x) + x) # Downsample columnwise: [B, 64, 1, 7] -\u003e [B, 7 * 64] x = self.downsample(x).view(-1, 7 * 64) # Fully connected layers (MLP head, outputs logits): [B, 7] x = self.fc_layers(x) if len(original_shape) == 2: x = x.squeeze(0) return x First evaluation We can now attempt training this residual network structure using the self-play loop from a previous post. A simple improvement worth implementing is to copy the current model to the checkpoint one only if it achieves a positive win rate over it, say, 52%.\nWith careful manual annealing of the learning rate (from 1e-3 through 1e-4 to 1e-5) and of the entropy bonus (from 0.05 to 0.03), we can push the win rate against the RandomPunisher to just above 50%. That’s a significant improvement over the MLP model as mentioned at the beginning of this post (35%), but in the end we want to do more than break even against a model that behaves just one or two steps removed from random.\nThe issue is that the basic REINFORCE algorithm is well known to be quite noisy, and this is also evident in the training plots as well as in the difficulty of choosing good hyperparameters for the optimization.2 If we want more robust training and better final performance, we’ll have to graduate to more advanced RL algorithms.\nYou can convince yourself of that if you refer back to the previous diagram and count how many of the blue 3x3 squares can fit into the padded board in each direction; it’s 6x7 again. ↩︎\nIt’s hard to make definitive statements of the kind that no better performance is possible using the present setup. Certainly, with much longer training and very careful hyperparameter tweaking, we could eke out a higher win rate. But in the end we are always fighting against the limitations of the basic algorithm we are using. ↩︎\n",
+  "wordCount" : "1978",
+  "inLanguage": "en",
+  "datePublished": "2025-04-28T22:30:00+02:00",
+  "dateModified": "2025-04-28T22:30:00+02:00",
+  "author":{
+    "@type": "Person",
+    "name": "cfh"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://c-f-h.github.io/post/model-design/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "cfh::blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://c-f-h.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://c-f-h.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://c-f-h.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/post/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Model Design for Connect 4
+    </h1>
+    <div class="post-meta"><span title='2025-04-28 22:30:00 +0200 +0200'>April 28, 2025</span>&nbsp;·&nbsp;cfh
+
+</div>
+  </header> 
+  <div class="post-content"><p>With the <a href="/post/random-punisher/">fearsome RandomPunisher</a> putting our
+<a href="/post/entropy-regularization/">first Connect 4 toy model</a>
+in its place, it&rsquo;s time to design something that stands a chance.</p>
+<h2 id="a-design-based-on-cnns">A design based on CNNs<a hidden class="anchor" aria-hidden="true" href="#a-design-based-on-cnns">#</a></h2>
+<p>It&rsquo;s standard practice for board-game playing neural networks to have at least a few
+<strong>convolutional neural network (CNN)</strong> layers at the initial inputs. This shouldn&rsquo;t come as
+a surprise: the board is a regular grid, much like an image, and CNNs are strong performers
+in image processing. In our case, it will allow the model to learn features like
+&ldquo;here are three of my pieces in a diagonal downward row&rdquo; which are then automatically
+applied to every position on the board, rather than having to re-learn these features
+individually at each board position.</p>
+<p>This isn&rsquo;t the place for me to go into a full-blown writeup on convolutional neural
+networks, but the idea is to learn small matrices or tensors called kernels which slide over
+the input image and transform each local neighborhood of pixels in the same way.
+This saves parameters compared to a fully connected layer and allows the model to learn
+uniform features which apply all over the board.</p>
+<p>Have a look at this diagram, which shows a 3x3 kernel being moved diagonally over our
+game board with one cell for padding on each side:</p>
+<figure>
+<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="450" height="400" viewBox="0 0 450 400">
+  <defs>
+    <pattern id="cell" width="50" height="50" patternUnits="userSpaceOnUse">
+      <rect width="50" height="50" fill="white" stroke="#666" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="450" height="400" fill="url(#cell)"/>
+  <!-- highlight the original 6x7 Connect-4 area inside the padding -->
+  <rect x="50" y="50" width="350" height="300"
+        fill="none" stroke="black" stroke-width="3"/>
+  <!-- draw 7 kernels moving diagonally -->
+  <g fill="blue" fill-opacity="0.2" stroke="gray" stroke-width="2">
+    <rect x="0"    y="0"      width="150" height="150"/>
+    <rect x="50"   y="50"     width="150" height="150"/>
+    <rect x="100"  y="100"    width="150" height="150"/>
+    <rect x="150"  y="150"    width="150" height="150"/>
+    <rect x="200"  y="200"    width="150" height="150"/>
+    <rect x="250"  y="250"    width="150" height="150"/>
+  </g>
+</svg>
+<figcaption>
+<p>Six instances of a 3x3 convolution kernel being overlaid on the game board
+with one cell of padding on every side.</p>
+</figcaption>
+</figure>
+<p>The architecture of the network is relatively standard and in part inspired by the
+<a href="https://doi.org/10.1126/science.aar6404">AlphaZero model</a>:
+it uses an initial convolutional layer, then three residual
+blocks consisting of two convolutional layers each, a pooling layer,
+and finally a MLP head with two hidden fully connected layers with 128 neurons each.
+As the activation function we use ReLU throughout.</p>
+<h3 id="initial-feature-extraction">Initial feature extraction<a hidden class="anchor" aria-hidden="true" href="#initial-feature-extraction">#</a></h3>
+<p>To help our model out a bit, we separate the original board out into <strong>three input
+channels</strong>: one for our pieces, one for the opponent&rsquo;s pieces, and one for empty cells.
+Each of these channels will have 1 for the corresponding feature and 0 otherwise.</p>
+<p>The number of channels is an important parameter to tune depending on the complexity of
+the problem. Since Connect-4 isn&rsquo;t that complicated, 64 channels are probably sufficient;
+for comparison, AlphaZero uses 256 channels on each CNN layer.</p>
+<p>Each convolutional layer uses 64 channels, a kernel size of 3x3, and padding 1.
+These are standard settings which ensure that the output has the same dimensions
+as the input.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<p>The very first convolutional layer serves as a <strong>feature extractor</strong> and maps the three
+input channels to 64 output channels while keeping the board dimension at (6, 7).</p>
+<h3 id="residual-blocks">Residual blocks<a hidden class="anchor" aria-hidden="true" href="#residual-blocks">#</a></h3>
+<p>After that, we have three <strong>residual blocks</strong>.
+Each one of them consists of two conv layers with 64 input and output channels such
+that they maintain both the spatial dimension and the number of channels.
+The input to the residual block is added back in to the output of the second conv
+layer before the activation function, which is the defining feature of
+residual blocks.
+This both improves training robustness, because gradient information can flow &ldquo;around&rdquo;
+the block in addition to through it, and often gives the block an easier target to learn
+because it only needs to learn the deviation from the identity function. The
+schematic below shows the precise behavior of the data flow.</p>
+<p>Afterwards, we do some kind of pooling to reduce the number of features. We could do
+global or column-wise average pooling, but to give the model a bit more to work with,
+we instead use another convolutional <strong>downsampling layer</strong>:
+it has a kernel size of (6,1), meaning that each convolution kernel
+covers an entire column of the board.
+With padding 0, this means that our data is reduced from
+(64, 6, 7) to (64, 1, 7). This is illustrated in the following diagram:</p>
+<figure>
+<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="350" height="300" viewBox="0 0 350 300">
+  <defs>
+    <pattern id="cell" width="50" height="50" patternUnits="userSpaceOnUse">
+      <rect width="50" height="50" fill="white" stroke="#666" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="350" height="300" fill="url(#cell)"/>
+  <!-- highlight the original 6x7 Connect-4 area inside the padding -->
+  <rect x="0" y="0" width="350" height="300"
+        fill="none" stroke="black" stroke-width="3"/>
+  <!-- draw 7 kernels moving diagonally -->
+  <g fill="blue" fill-opacity="0.2" stroke="gray" stroke-width="2">
+    <rect x="100"    y="0"      width="50" height="300"/>
+  </g>
+</svg>
+<figcaption>
+<p>The downsampling convolution with filter size (6,1) collapses an entire column into
+one value.</p>
+</figcaption>
+</figure>
+<h3 id="mlp-head">MLP head<a hidden class="anchor" aria-hidden="true" href="#mlp-head">#</a></h3>
+<p>This downsampled data is then flattened to a vector of length 64 * 7 = 448.
+To obtain the final output policy, we attach an <strong>MLP head</strong> consisting of
+three fully connected layers with output sizes 128, 128, and 7, respectively.
+The final layer doesn&rsquo;t have an activation function since we want to output raw logits.</p>
+<h3 id="normalization">Normalization<a hidden class="anchor" aria-hidden="true" href="#normalization">#</a></h3>
+<p>Using some kind of <strong>layer normalization</strong> is usually a good idea as it makes the training
+process more robust. However, batch normalization, the most common choice, is not ideal
+here due to the way it interacts with an on-policy RL algorithm. BatchNorm
+behaves differently during training, where it uses the stats of the current batch, and
+evaluation (which we use to sample games), where it uses the collected aggregate stats
+to normalize the inputs. As discussed earlier, REINFORCE really relies on using
+the same distribution during play and training, and I observed significantly more noisy
+behavior when using BatchNorm.</p>
+<p>Instead, we use other popular options: for the conv layers, we use <strong>group normalization</strong>
+with a group size of 16, and for the fully connected layers <strong>layer normalization</strong>,
+which normalizes the activations of each sample with respect to itself only, without
+keeping any running stats. As is usual, we remove the bias term on conv and linear layers
+before normalization layers because those come with their own bias.</p>
+<p>Here&rsquo;s a schematic of the entire network architecture:</p>
+
+
+
+
+<figure id="diagram-1">
+  
+    <svg class="diagram" width="576" height="1161"  xmlns="http://www.w3.org/2000/svg" version="1.1">
+      <g transform='translate(8,16)'>
+<path d='M 0,0 L 224,0' fill='none' stroke='currentColor'></path>
+<path d='M 0,32 L 104,32' fill='none' stroke='currentColor'></path>
+<path d='M 104,32 L 224,32' fill='none' stroke='currentColor'></path>
+<path d='M 0,80 L 224,80' fill='none' stroke='currentColor'></path>
+<path d='M 0,112 L 104,112' fill='none' stroke='currentColor'></path>
+<path d='M 104,112 L 224,112' fill='none' stroke='currentColor'></path>
+<path d='M 0,160 L 224,160' fill='none' stroke='currentColor'></path>
+<path d='M 0,240 L 104,240' fill='none' stroke='currentColor'></path>
+<path d='M 104,240 L 224,240' fill='none' stroke='currentColor'></path>
+<path d='M 112,272 L 400,272' fill='none' stroke='currentColor'></path>
+<path d='M 0,304 L 224,304' fill='none' stroke='currentColor'></path>
+<path d='M 0,368 L 104,368' fill='none' stroke='currentColor'></path>
+<path d='M 104,368 L 224,368' fill='none' stroke='currentColor'></path>
+<path d='M 112,400 L 400,400' fill='none' stroke='currentColor'></path>
+<path d='M 112,464 L 400,464' fill='none' stroke='currentColor'></path>
+<path d='M 0,496 L 224,496' fill='none' stroke='currentColor'></path>
+<path d='M 0,560 L 104,560' fill='none' stroke='currentColor'></path>
+<path d='M 104,560 L 224,560' fill='none' stroke='currentColor'></path>
+<path d='M 112,592 L 400,592' fill='none' stroke='currentColor'></path>
+<path d='M 112,656 L 400,656' fill='none' stroke='currentColor'></path>
+<path d='M 0,688 L 224,688' fill='none' stroke='currentColor'></path>
+<path d='M 0,752 L 104,752' fill='none' stroke='currentColor'></path>
+<path d='M 104,752 L 224,752' fill='none' stroke='currentColor'></path>
+<path d='M 112,784 L 400,784' fill='none' stroke='currentColor'></path>
+<path d='M 0,864 L 224,864' fill='none' stroke='currentColor'></path>
+<path d='M 0,928 L 104,928' fill='none' stroke='currentColor'></path>
+<path d='M 104,928 L 224,928' fill='none' stroke='currentColor'></path>
+<path d='M 0,976 L 224,976' fill='none' stroke='currentColor'></path>
+<path d='M 0,1056 L 104,1056' fill='none' stroke='currentColor'></path>
+<path d='M 104,1056 L 224,1056' fill='none' stroke='currentColor'></path>
+<path d='M 0,1104 L 224,1104' fill='none' stroke='currentColor'></path>
+<path d='M 0,1136 L 224,1136' fill='none' stroke='currentColor'></path>
+<path d='M 0,0 L 0,32' fill='none' stroke='currentColor'></path>
+<path d='M 0,80 L 0,112' fill='none' stroke='currentColor'></path>
+<path d='M 0,160 L 0,240' fill='none' stroke='currentColor'></path>
+<path d='M 0,304 L 0,368' fill='none' stroke='currentColor'></path>
+<path d='M 0,496 L 0,560' fill='none' stroke='currentColor'></path>
+<path d='M 0,688 L 0,752' fill='none' stroke='currentColor'></path>
+<path d='M 0,864 L 0,928' fill='none' stroke='currentColor'></path>
+<path d='M 0,976 L 0,1056' fill='none' stroke='currentColor'></path>
+<path d='M 0,1104 L 0,1136' fill='none' stroke='currentColor'></path>
+<path d='M 104,32 L 104,64' fill='none' stroke='currentColor'></path>
+<path d='M 104,112 L 104,144' fill='none' stroke='currentColor'></path>
+<path d='M 104,240 L 104,288' fill='none' stroke='currentColor'></path>
+<path d='M 104,368 L 104,400' fill='none' stroke='currentColor'></path>
+<path d='M 104,400 L 104,432' fill='none' stroke='currentColor'></path>
+<path d='M 104,432 L 104,480' fill='none' stroke='currentColor'></path>
+<path d='M 104,560 L 104,592' fill='none' stroke='currentColor'></path>
+<path d='M 104,592 L 104,624' fill='none' stroke='currentColor'></path>
+<path d='M 104,624 L 104,672' fill='none' stroke='currentColor'></path>
+<path d='M 104,752 L 104,784' fill='none' stroke='currentColor'></path>
+<path d='M 104,784 L 104,816' fill='none' stroke='currentColor'></path>
+<path d='M 104,816 L 104,848' fill='none' stroke='currentColor'></path>
+<path d='M 104,928 L 104,960' fill='none' stroke='currentColor'></path>
+<path d='M 104,1056 L 104,1088' fill='none' stroke='currentColor'></path>
+<path d='M 224,0 L 224,32' fill='none' stroke='currentColor'></path>
+<path d='M 224,80 L 224,112' fill='none' stroke='currentColor'></path>
+<path d='M 224,160 L 224,240' fill='none' stroke='currentColor'></path>
+<path d='M 224,304 L 224,368' fill='none' stroke='currentColor'></path>
+<path d='M 224,496 L 224,560' fill='none' stroke='currentColor'></path>
+<path d='M 224,688 L 224,752' fill='none' stroke='currentColor'></path>
+<path d='M 224,864 L 224,928' fill='none' stroke='currentColor'></path>
+<path d='M 224,976 L 224,1056' fill='none' stroke='currentColor'></path>
+<path d='M 224,1104 L 224,1136' fill='none' stroke='currentColor'></path>
+<path d='M 400,272 L 400,336' fill='none' stroke='currentColor'></path>
+<path d='M 400,336 L 400,400' fill='none' stroke='currentColor'></path>
+<path d='M 400,464 L 400,528' fill='none' stroke='currentColor'></path>
+<path d='M 400,528 L 400,592' fill='none' stroke='currentColor'></path>
+<path d='M 400,656 L 400,720' fill='none' stroke='currentColor'></path>
+<path d='M 400,720 L 400,784' fill='none' stroke='currentColor'></path>
+<path d='M 104,64 L 104,72' fill='none' stroke='currentColor'></path>
+<polygon points='120.000000,64.000000 108.000000,58.400002 108.000000,69.599998' fill='currentColor' transform='rotate(90.000000, 104.000000, 64.000000)'></polygon>
+<path d='M 104,144 L 104,152' fill='none' stroke='currentColor'></path>
+<polygon points='120.000000,144.000000 108.000000,138.399994 108.000000,149.600006' fill='currentColor' transform='rotate(90.000000, 104.000000, 144.000000)'></polygon>
+<path d='M 104,288 L 104,296' fill='none' stroke='currentColor'></path>
+<polygon points='120.000000,288.000000 108.000000,282.399994 108.000000,293.600006' fill='currentColor' transform='rotate(90.000000, 104.000000, 288.000000)'></polygon>
+<polygon points='112.000000,432.000000 100.000000,426.399994 100.000000,437.600006' fill='currentColor' transform='rotate(90.000000, 104.000000, 432.000000)'></polygon>
+<path d='M 104,480 L 104,488' fill='none' stroke='currentColor'></path>
+<polygon points='120.000000,480.000000 108.000000,474.399994 108.000000,485.600006' fill='currentColor' transform='rotate(90.000000, 104.000000, 480.000000)'></polygon>
+<polygon points='112.000000,624.000000 100.000000,618.400024 100.000000,629.599976' fill='currentColor' transform='rotate(90.000000, 104.000000, 624.000000)'></polygon>
+<path d='M 104,672 L 104,680' fill='none' stroke='currentColor'></path>
+<polygon points='120.000000,672.000000 108.000000,666.400024 108.000000,677.599976' fill='currentColor' transform='rotate(90.000000, 104.000000, 672.000000)'></polygon>
+<polygon points='112.000000,816.000000 100.000000,810.400024 100.000000,821.599976' fill='currentColor' transform='rotate(90.000000, 104.000000, 816.000000)'></polygon>
+<path d='M 104,848 L 104,856' fill='none' stroke='currentColor'></path>
+<polygon points='120.000000,848.000000 108.000000,842.400024 108.000000,853.599976' fill='currentColor' transform='rotate(90.000000, 104.000000, 848.000000)'></polygon>
+<path d='M 104,960 L 104,968' fill='none' stroke='currentColor'></path>
+<polygon points='120.000000,960.000000 108.000000,954.400024 108.000000,965.599976' fill='currentColor' transform='rotate(90.000000, 104.000000, 960.000000)'></polygon>
+<path d='M 104,1088 L 104,1096' fill='none' stroke='currentColor'></path>
+<polygon points='120.000000,1088.000000 108.000000,1082.400024 108.000000,1093.599976' fill='currentColor' transform='rotate(90.000000, 104.000000, 1088.000000)'></polygon>
+<polygon points='120.000000,400.000000 108.000000,394.399994 108.000000,405.600006' fill='currentColor' transform='rotate(180.000000, 112.000000, 400.000000)'></polygon>
+<polygon points='120.000000,592.000000 108.000000,586.400024 108.000000,597.599976' fill='currentColor' transform='rotate(180.000000, 112.000000, 592.000000)'></polygon>
+<polygon points='120.000000,784.000000 108.000000,778.400024 108.000000,789.599976' fill='currentColor' transform='rotate(180.000000, 112.000000, 784.000000)'></polygon>
+<polygon points='408.000000,336.000000 396.000000,330.399994 396.000000,341.600006' fill='currentColor' transform='rotate(90.000000, 400.000000, 336.000000)'></polygon>
+<polygon points='408.000000,528.000000 396.000000,522.400024 396.000000,533.599976' fill='currentColor' transform='rotate(90.000000, 400.000000, 528.000000)'></polygon>
+<polygon points='408.000000,720.000000 396.000000,714.400024 396.000000,725.599976' fill='currentColor' transform='rotate(90.000000, 400.000000, 720.000000)'></polygon>
+<text text-anchor='middle' x='16' y='900' fill='currentColor' style='font-size:1em'>C</text>
+<text text-anchor='middle' x='16' y='916' fill='currentColor' style='font-size:1em'>F</text>
+<text text-anchor='middle' x='16' y='1012' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='16' y='1028' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='16' y='1044' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='24' y='900' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='24' y='916' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='24' y='1012' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='24' y='1028' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='24' y='1044' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='32' y='20' fill='currentColor' style='font-size:1em'>I</text>
+<text text-anchor='middle' x='32' y='100' fill='currentColor' style='font-size:1em'>b</text>
+<text text-anchor='middle' x='32' y='196' fill='currentColor' style='font-size:1em'>C</text>
+<text text-anchor='middle' x='32' y='212' fill='currentColor' style='font-size:1em'>G</text>
+<text text-anchor='middle' x='32' y='228' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='32' y='340' fill='currentColor' style='font-size:1em'>C</text>
+<text text-anchor='middle' x='32' y='356' fill='currentColor' style='font-size:1em'>C</text>
+<text text-anchor='middle' x='32' y='532' fill='currentColor' style='font-size:1em'>C</text>
+<text text-anchor='middle' x='32' y='548' fill='currentColor' style='font-size:1em'>C</text>
+<text text-anchor='middle' x='32' y='724' fill='currentColor' style='font-size:1em'>C</text>
+<text text-anchor='middle' x='32' y='740' fill='currentColor' style='font-size:1em'>C</text>
+<text text-anchor='middle' x='32' y='884' fill='currentColor' style='font-size:1em'>D</text>
+<text text-anchor='middle' x='32' y='900' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='32' y='916' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='32' y='996' fill='currentColor' style='font-size:1em'>M</text>
+<text text-anchor='middle' x='32' y='1012' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='32' y='1028' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='32' y='1044' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='32' y='1124' fill='currentColor' style='font-size:1em'>O</text>
+<text text-anchor='middle' x='40' y='20' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='40' y='100' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='196' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='212' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='40' y='228' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='40' y='340' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='356' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='532' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='548' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='724' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='740' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='884' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='40' y='900' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='40' y='916' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='40' y='996' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='40' y='1012' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='40' y='1028' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='40' y='1044' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='40' y='1124' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='48' y='20' fill='currentColor' style='font-size:1em'>p</text>
+<text text-anchor='middle' x='48' y='100' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='48' y='180' fill='currentColor' style='font-size:1em'>F</text>
+<text text-anchor='middle' x='48' y='196' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='48' y='212' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='48' y='228' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='48' y='324' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='48' y='340' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='48' y='356' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='48' y='516' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='48' y='532' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='48' y='548' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='48' y='708' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='48' y='724' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='48' y='740' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='48' y='884' fill='currentColor' style='font-size:1em'>w</text>
+<text text-anchor='middle' x='48' y='900' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='48' y='916' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='48' y='996' fill='currentColor' style='font-size:1em'>P</text>
+<text text-anchor='middle' x='48' y='1012' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='48' y='1028' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='48' y='1044' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='48' y='1124' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='56' y='20' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='56' y='100' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='56' y='180' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='56' y='196' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='56' y='212' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='56' y='228' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='56' y='324' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='56' y='340' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='56' y='356' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='56' y='516' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='56' y='532' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='56' y='548' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='56' y='708' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='56' y='724' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='56' y='740' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='56' y='884' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='56' y='900' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='56' y='916' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='56' y='1012' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='56' y='1028' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='56' y='1044' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='56' y='1124' fill='currentColor' style='font-size:1em'>p</text>
+<text text-anchor='middle' x='64' y='20' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='64' y='100' fill='currentColor' style='font-size:1em'>d</text>
+<text text-anchor='middle' x='64' y='180' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='64' y='196' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='212' fill='currentColor' style='font-size:1em'>p</text>
+<text text-anchor='middle' x='64' y='324' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='64' y='340' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='356' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='516' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='64' y='532' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='548' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='708' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='64' y='724' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='740' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='884' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='64' y='900' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='64' y='916' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='64' y='996' fill='currentColor' style='font-size:1em'>H</text>
+<text text-anchor='middle' x='64' y='1012' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='1028' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='1044' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='64' y='1124' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='72' y='100' fill='currentColor' style='font-size:1em'>_</text>
+<text text-anchor='middle' x='72' y='180' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='72' y='196' fill='currentColor' style='font-size:1em'>3</text>
+<text text-anchor='middle' x='72' y='212' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='72' y='324' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='72' y='340' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='72' y='356' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='72' y='516' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='72' y='532' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='72' y='548' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='72' y='708' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='72' y='724' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='72' y='740' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='72' y='884' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='72' y='900' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='72' y='996' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='72' y='1012' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='72' y='1028' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='72' y='1044' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='72' y='1124' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='80' y='20' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='80' y='100' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='80' y='180' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='80' y='196' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='80' y='212' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='80' y='324' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='80' y='340' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='80' y='356' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='80' y='516' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='80' y='532' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='80' y='548' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='80' y='708' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='80' y='724' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='80' y='740' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='80' y='884' fill='currentColor' style='font-size:1em'>m</text>
+<text text-anchor='middle' x='80' y='996' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='80' y='1012' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='80' y='1028' fill='currentColor' style='font-size:1em'>2</text>
+<text text-anchor='middle' x='80' y='1044' fill='currentColor' style='font-size:1em'>2</text>
+<text text-anchor='middle' x='88' y='20' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='88' y='100' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='88' y='180' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='88' y='212' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='88' y='324' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='88' y='340' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='88' y='356' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='88' y='516' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='88' y='532' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='88' y='548' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='88' y='708' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='88' y='724' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='88' y='740' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='88' y='884' fill='currentColor' style='font-size:1em'>p</text>
+<text text-anchor='middle' x='88' y='900' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='88' y='996' fill='currentColor' style='font-size:1em'>d</text>
+<text text-anchor='middle' x='88' y='1012' fill='currentColor' style='font-size:1em'>8</text>
+<text text-anchor='middle' x='88' y='1028' fill='currentColor' style='font-size:1em'>8</text>
+<text text-anchor='middle' x='88' y='1044' fill='currentColor' style='font-size:1em'>8</text>
+<text text-anchor='middle' x='88' y='1124' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='96' y='20' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='96' y='100' fill='currentColor' style='font-size:1em'>_</text>
+<text text-anchor='middle' x='96' y='180' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='96' y='196' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='96' y='212' fill='currentColor' style='font-size:1em'>m</text>
+<text text-anchor='middle' x='96' y='324' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='96' y='340' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='96' y='356' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='96' y='516' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='96' y='532' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='96' y='548' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='96' y='708' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='96' y='724' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='96' y='740' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='96' y='884' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='96' y='900' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='96' y='1012' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='96' y='1028' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='96' y='1044' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='96' y='1124' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='104' y='20' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='104' y='100' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='104' y='196' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='104' y='212' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='104' y='324' fill='currentColor' style='font-size:1em'>k</text>
+<text text-anchor='middle' x='104' y='340' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='104' y='356' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='104' y='516' fill='currentColor' style='font-size:1em'>k</text>
+<text text-anchor='middle' x='104' y='532' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='104' y='548' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='104' y='708' fill='currentColor' style='font-size:1em'>k</text>
+<text text-anchor='middle' x='104' y='724' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='104' y='740' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='104' y='884' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='104' y='900' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='104' y='1124' fill='currentColor' style='font-size:1em'>g</text>
+<text text-anchor='middle' x='112' y='20' fill='currentColor' style='font-size:1em'>d</text>
+<text text-anchor='middle' x='112' y='100' fill='currentColor' style='font-size:1em'>h</text>
+<text text-anchor='middle' x='112' y='180' fill='currentColor' style='font-size:1em'>E</text>
+<text text-anchor='middle' x='112' y='196' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='112' y='212' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='112' y='340' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='112' y='356' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='112' y='532' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='112' y='548' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='112' y='724' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='112' y='740' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='112' y='884' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='112' y='1012' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='112' y='1028' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='112' y='1044' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='112' y='1124' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='120' y='100' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='120' y='180' fill='currentColor' style='font-size:1em'>x</text>
+<text text-anchor='middle' x='120' y='212' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='120' y='324' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='120' y='340' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='120' y='356' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='120' y='516' fill='currentColor' style='font-size:1em'>2</text>
+<text text-anchor='middle' x='120' y='532' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='120' y='548' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='120' y='708' fill='currentColor' style='font-size:1em'>3</text>
+<text text-anchor='middle' x='120' y='724' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='120' y='740' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='120' y='884' fill='currentColor' style='font-size:1em'>g</text>
+<text text-anchor='middle' x='120' y='900' fill='currentColor' style='font-size:1em'>k</text>
+<text text-anchor='middle' x='120' y='1012' fill='currentColor' style='font-size:1em'>2</text>
+<text text-anchor='middle' x='120' y='1028' fill='currentColor' style='font-size:1em'>2</text>
+<text text-anchor='middle' x='120' y='1044' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='120' y='1124' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='128' y='20' fill='currentColor' style='font-size:1em'>S</text>
+<text text-anchor='middle' x='128' y='100' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='128' y='180' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='128' y='196' fill='currentColor' style='font-size:1em'>k</text>
+<text text-anchor='middle' x='128' y='212' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='128' y='340' fill='currentColor' style='font-size:1em'>G</text>
+<text text-anchor='middle' x='128' y='356' fill='currentColor' style='font-size:1em'>G</text>
+<text text-anchor='middle' x='128' y='436' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='128' y='532' fill='currentColor' style='font-size:1em'>G</text>
+<text text-anchor='middle' x='128' y='548' fill='currentColor' style='font-size:1em'>G</text>
+<text text-anchor='middle' x='128' y='628' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='128' y='724' fill='currentColor' style='font-size:1em'>G</text>
+<text text-anchor='middle' x='128' y='740' fill='currentColor' style='font-size:1em'>G</text>
+<text text-anchor='middle' x='128' y='820' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='128' y='900' fill='currentColor' style='font-size:1em'>=</text>
+<text text-anchor='middle' x='128' y='1012' fill='currentColor' style='font-size:1em'>8</text>
+<text text-anchor='middle' x='128' y='1028' fill='currentColor' style='font-size:1em'>8</text>
+<text text-anchor='middle' x='128' y='1124' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='136' y='20' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='136' y='100' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='136' y='180' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='136' y='196' fill='currentColor' style='font-size:1em'>=</text>
+<text text-anchor='middle' x='136' y='340' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='136' y='356' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='136' y='436' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='136' y='532' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='136' y='548' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='136' y='628' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='136' y='724' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='136' y='740' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='136' y='820' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='136' y='900' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='136' y='1012' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='136' y='1028' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='144' y='20' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='144' y='100' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='144' y='180' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='144' y='196' fill='currentColor' style='font-size:1em'>3</text>
+<text text-anchor='middle' x='144' y='212' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='144' y='340' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='144' y='436' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='144' y='532' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='144' y='628' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='144' y='724' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='144' y='820' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='144' y='900' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='144' y='1012' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='144' y='1028' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='152' y='20' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='152' y='100' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='152' y='180' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='152' y='196' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='152' y='212' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='152' y='340' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='152' y='436' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='152' y='532' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='152' y='628' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='152' y='724' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='152' y='820' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='152' y='900' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='152' y='1012' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='152' y='1028' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='160' y='20' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='160' y='100' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='160' y='180' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='160' y='212' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='160' y='340' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='160' y='532' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='160' y='724' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='160' y='900' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='160' y='1012' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='160' y='1028' fill='currentColor' style='font-size:1em'>N</text>
+<text text-anchor='middle' x='168' y='180' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='168' y='196' fill='currentColor' style='font-size:1em'>p</text>
+<text text-anchor='middle' x='168' y='340' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='168' y='532' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='168' y='724' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='168' y='900' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='168' y='1012' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='168' y='1028' fill='currentColor' style='font-size:1em'>+</text>
+<text text-anchor='middle' x='176' y='180' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='176' y='196' fill='currentColor' style='font-size:1em'>=</text>
+<text text-anchor='middle' x='176' y='340' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='176' y='532' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='176' y='724' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='176' y='900' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='176' y='1012' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='176' y='1028' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='184' y='180' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='184' y='196' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='184' y='1012' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='184' y='1028' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='192' y='196' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='192' y='1012' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='192' y='1028' fill='currentColor' style='font-size:1em'>L</text>
+<text text-anchor='middle' x='200' y='1012' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='200' y='1028' fill='currentColor' style='font-size:1em'>U</text>
+<text text-anchor='middle' x='248' y='20' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='100' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='228' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='356' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='548' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='740' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='900' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='916' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='1044' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='248' y='1124' fill='currentColor' style='font-size:1em'>[</text>
+<text text-anchor='middle' x='256' y='20' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='100' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='228' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='356' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='548' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='740' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='900' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='916' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='1044' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='256' y='1124' fill='currentColor' style='font-size:1em'>B</text>
+<text text-anchor='middle' x='264' y='20' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='100' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='228' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='356' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='548' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='740' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='900' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='916' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='1044' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='264' y='1124' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='280' y='20' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='280' y='100' fill='currentColor' style='font-size:1em'>3</text>
+<text text-anchor='middle' x='280' y='228' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='280' y='356' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='280' y='548' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='280' y='740' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='280' y='900' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='280' y='916' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='280' y='1044' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='280' y='1124' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='288' y='20' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='288' y='100' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='288' y='228' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='288' y='356' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='288' y='548' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='288' y='740' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='288' y='900' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='288' y='916' fill='currentColor' style='font-size:1em'>4</text>
+<text text-anchor='middle' x='288' y='1044' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='288' y='1124' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='296' y='228' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='296' y='356' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='296' y='548' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='296' y='740' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='296' y='900' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='296' y='916' fill='currentColor' style='font-size:1em'>8</text>
+<text text-anchor='middle' x='304' y='20' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='304' y='100' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='304' y='916' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='312' y='20' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='312' y='100' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='312' y='228' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='312' y='356' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='312' y='548' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='312' y='740' fill='currentColor' style='font-size:1em'>6</text>
+<text text-anchor='middle' x='312' y='900' fill='currentColor' style='font-size:1em'>1</text>
+<text text-anchor='middle' x='320' y='228' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='320' y='356' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='320' y='548' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='320' y='740' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='320' y='900' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='328' y='100' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='336' y='100' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='336' y='228' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='336' y='356' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='336' y='548' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='336' y='740' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='336' y='900' fill='currentColor' style='font-size:1em'>7</text>
+<text text-anchor='middle' x='344' y='228' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='344' y='356' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='344' y='548' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='344' y='740' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='344' y='900' fill='currentColor' style='font-size:1em'>]</text>
+<text text-anchor='middle' x='416' y='340' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='416' y='532' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='416' y='724' fill='currentColor' style='font-size:1em'>R</text>
+<text text-anchor='middle' x='424' y='340' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='424' y='532' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='424' y='724' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='432' y='340' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='432' y='532' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='432' y='724' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='440' y='340' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='440' y='532' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='440' y='724' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='448' y='340' fill='currentColor' style='font-size:1em'>d</text>
+<text text-anchor='middle' x='448' y='532' fill='currentColor' style='font-size:1em'>d</text>
+<text text-anchor='middle' x='448' y='724' fill='currentColor' style='font-size:1em'>d</text>
+<text text-anchor='middle' x='456' y='340' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='456' y='532' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='456' y='724' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='464' y='340' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='464' y='532' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='464' y='724' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='472' y='340' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='472' y='532' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='472' y='724' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='488' y='340' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='488' y='532' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='488' y='724' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='496' y='340' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='496' y='532' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='496' y='724' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='504' y='340' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='504' y='532' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='504' y='724' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='512' y='340' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='512' y='532' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='512' y='724' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='520' y='340' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='520' y='532' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='520' y='724' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='528' y='340' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='528' y='532' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='528' y='724' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='536' y='340' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='536' y='532' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='536' y='724' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='544' y='340' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='544' y='532' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='544' y='724' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='552' y='340' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='552' y='532' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='552' y='724' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='560' y='340' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='560' y='532' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='560' y='724' fill='currentColor' style='font-size:1em'>n</text>
+</g>
+
+    </svg>
+  
+  <figcaption><p>Schematic of the residual CNN architecture.</p></figcaption>
+</figure><p>The network has a total of around <strong>356k parameters</strong>.
+There are obvious ways we could tune this design later:
+the number of convolution filters, residual blocks, and depth and width of
+the MLP head are all parameters we could tweak to adjust model complexity.</p>
+<h2 id="implementation">Implementation<a hidden class="anchor" aria-hidden="true" href="#implementation">#</a></h2>
+<p>The model described above is straightforward to implement using standard PyTorch tools:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">board_to_channels</span><span class="p">(</span><span class="n">board</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;Converts a board tensor (0=empty, 1=p1, -1=p2) to 3 channel representation.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># Create channels: [batch, channels, rows, cols]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">channels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">board</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                           <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">board</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">channels</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">board</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>    <span class="c1"># Current player&#39;s pieces</span>
+</span></span><span class="line"><span class="cl">    <span class="n">channels</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">board</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>   <span class="c1"># Opponent&#39;s pieces</span>
+</span></span><span class="line"><span class="cl">    <span class="n">channels</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">board</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>    <span class="c1"># Empty cells</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">channels</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Connect4CNN_Mk4</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;CNN/ResNet model with global average pooling and MLP classifier head.&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Extract 64 feature channels from the 3 input channels of the board.</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">feature_extractor</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">GroupNorm</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">def</span> <span class="nf">make_resblock</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                <span class="n">nn</span><span class="o">.</span><span class="n">GroupNorm</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                <span class="n">nn</span><span class="o">.</span><span class="n">GroupNorm</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">resblock1</span> <span class="o">=</span> <span class="n">make_resblock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">resblock2</span> <span class="o">=</span> <span class="n">make_resblock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">resblock3</span> <span class="o">=</span> <span class="n">make_resblock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                    <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Fully connected layers</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">fc_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span> <span class="o">*</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>      <span class="c1"># output raw logits</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">original_shape</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>      <span class="c1"># Add temporary batch dimension</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Convert board to channel representation (3 channels)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="n">board_to_channels</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>       <span class="c1"># [B, 3, ROWS, COLS]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_extractor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># [B, 64, ROWS, COLS]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Apply residual CNN blocks (note the &#34;+x&#34; connection before ReLU)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resblock1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resblock2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resblock3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Downsample columnwise: [B, 64, 1, 7] -&gt; [B, 7 * 64]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span> <span class="o">*</span> <span class="mi">64</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Fully connected layers (MLP head, outputs logits): [B, 7]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_layers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">x</span>
+</span></span></code></pre></div><h2 id="first-evaluation">First evaluation<a hidden class="anchor" aria-hidden="true" href="#first-evaluation">#</a></h2>
+<p>We can now attempt training this residual network structure using the self-play
+loop from <a href="/post/policy-collapse/">a previous post</a>.
+A simple improvement worth implementing is to copy the current model to the checkpoint one
+only if it achieves a positive win rate over it, say, 52%.</p>
+<p>With careful manual annealing of the learning rate (from 1e-3 through 1e-4 to 1e-5) and of
+the entropy bonus (from 0.05 to 0.03), we can push the win rate against the
+<code>RandomPunisher</code>
+to just above 50%. That&rsquo;s a significant improvement over the MLP model as mentioned at the
+beginning of this post (35%), but in the end we want to do more than break even
+against a model that behaves just one or two steps removed from random.</p>
+<p>The issue is that the basic REINFORCE algorithm is well known to be quite noisy, and this
+is also evident in the training plots as well as in the difficulty of choosing good
+hyperparameters for the optimization.<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> If we want more robust training and better final
+performance, we&rsquo;ll have to graduate to more advanced RL algorithms.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>You can convince yourself of that if you refer back to the previous
+diagram and count how many of the blue 3x3 squares can fit into the padded board in
+each direction; it&rsquo;s 6x7 again.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>It&rsquo;s hard to make definitive statements of the kind that no better performance is
+possible using the present setup. Certainly, with much longer training and very careful
+hyperparameter tweaking, we could eke out a higher win rate. But in the end we are
+always fighting against the limitations of the basic algorithm we are using.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://c-f-h.github.io/tags/python/">Python</a></li>
+      <li><a href="https://c-f-h.github.io/tags/pytorch/">PyTorch</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://c-f-h.github.io/post/random-punisher/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Introducing a Benchmark Opponent</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://c-f-h.github.io/">cfh::blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

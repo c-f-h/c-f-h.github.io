@@ -142,4 +142,5 @@ variety of moves, explores different board states and slowly learns about the ga
 
 It would absolutely be possible to continue training this model and see if it can reach
 a decent level of play, but perhaps it's time we first invested a bit more effort into
-model design---that's for the next post.
+model design. In [the next post]({{< relref random-punisher >}}), we first design a
+benchmark opponent to measure our progress in absolute terms.

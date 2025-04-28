@@ -155,7 +155,7 @@
 What is entropy? Given a probability distribution \(p=(p_1,\ldots,p_C)\) over a number of categories \(i=1,\ldots,C\), such as the distribution over the columns our Connect 4 model outputs for a given board state, entropy measures the “amount of randomness” and is defined as1
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-23 20:57:00 +0200 CEST'>April 23, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-23 20:57:00 +0200 +0200'>April 23, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to On Entropy" href="https://c-f-h.github.io/post/on-entropy/"></a>
 </article>
 
@@ -169,7 +169,7 @@ What is entropy? Given a probability distribution \(p=(p_1,\ldots,p_C)\) over a 
 A simple MLP model As a fruitfly of Connect 4-playing models, let’s start with a simple multilayer perceptron (MLP) model that follows the model protocol we outlined earlier: that means that it has an input layer taking a 6x7 int8 board state tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation function each, and an output layer of 7 neurons without any activation function—that’s exactly what we meant earlier when we said that the model should output raw logits.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-21 17:45:00 +0200 CEST'>April 21, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-21 17:45:00 +0200 +0200'>April 21, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to A First Training Run and Policy Collapse" href="https://c-f-h.github.io/post/policy-collapse/"></a>
 </article>
 
@@ -183,7 +183,7 @@ A simple MLP model As a fruitfly of Connect 4-playing models, let’s start with
 As it goes in life, our model wins some and loses some. How do we make it actually learn from its experiences? How does the magic happen?
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-20 20:29:21 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-20 20:29:21 +0200 +0200'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to The REINFORCE Algorithm" href="https://c-f-h.github.io/post/the-reinforce-algorithm/"></a>
 </article>
 
@@ -197,7 +197,7 @@ As it goes in life, our model wins some and loses some. How do we make it actual
 Canonical triangles The curved triangles we work with are specified by six 3D vectors, so that would mean 18 floating point numbers as our input data. But an important insight is that whether a triangle intersects itself doesn’t change when we rotate it, translate it, or uniformly scale it—it’s well known that affine transformations of spline control points result in affine transformations of the surface itself.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-09 20:57:38 +0200 CEST'>April 9, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-09 20:57:38 +0200 +0200'>April 9, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Preparing the Data" href="https://c-f-h.github.io/post/preparing-the-data/"></a>
 </article>
 
@@ -211,7 +211,7 @@ Canonical triangles The curved triangles we work with are specified by six 3D ve
 To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) and \((u_2, v_2)\) within the triangle’s domain such that their mappings coincide,
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-08 08:33:00 +0200 CEST'>April 8, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-08 08:33:00 +0200 +0200'>April 8, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Getting Accurate Intersections with Gauss-Newton" href="https://c-f-h.github.io/post/refining-intersections/"></a>
 </article>
 
@@ -226,7 +226,7 @@ The basic approach is:
 Subdivide the curved triangle into smaller subtriangles Find potentially intersecting pairs of subtriangles Check for actual intersections among these candidate pairs Subdividing the triangle We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-07 17:52:07 +0200 CEST'>April 7, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-07 17:52:07 +0200 +0200'>April 7, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Computing Self-Intersections, the Geometric Way" href="https://c-f-h.github.io/post/computing-intersections/"></a>
 </article>
 
@@ -239,7 +239,7 @@ Subdivide the curved triangle into smaller subtriangles Find potentially interse
     <p>As the starting point for a little machine learning project, I chose the following geometric problem. We are given a curved triangle in 3D space. It’s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges. These coefficients are interpreted as control points of a quadratic triangular Bezier surface. Such representations are commonly used in CAD systems to represent curved surfaces. Mathematically speaking, we map parameters \((u,v)\) which lie in the parameter-space triangle \( 0 \le u, v;\ u&#43;v \le 1\) to
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-06 21:06:14 +0200 CEST'>April 6, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-06 21:06:14 +0200 +0200'>April 6, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to The Curved Triangle Problem" href="https://c-f-h.github.io/post/the-triangle-problem/"></a>
 </article>
     </main>

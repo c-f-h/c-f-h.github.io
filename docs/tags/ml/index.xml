@@ -6,8 +6,24 @@
     <description>Recent content in ML on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 24 Apr 2025 20:15:00 +0200</lastBuildDate>
+    <lastBuildDate>Sat, 26 Apr 2025 09:50:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/ml/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Introducing a Benchmark Opponent</title>
+      <link>https://c-f-h.github.io/post/random-punisher/</link>
+      <pubDate>Sat, 26 Apr 2025 09:50:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/random-punisher/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://c-f-h.github.io/post/entropy-regularization/&#34;&gt;Last time&lt;/a&gt; we saw how the entropy bonus
+enables self-play training without running into policy collapse.
+However, the model we trained was quite small and probably not capable of very strong play.
+Before we dive into the details of an improved model architecture, it would be very helpful
+to have a decent, fixed benchmark to gauge our progress.&lt;/p&gt;
+&lt;h2 id=&#34;a-benchmark-opponent&#34;&gt;A benchmark opponent&lt;/h2&gt;
+&lt;p&gt;The only model with fixed performance we have right now is the &lt;code&gt;RandomPlayer&lt;/code&gt; from the
+&lt;a href=&#34;https://c-f-h.github.io/post/basic-setup-and-play/&#34;&gt;basic setup post&lt;/a&gt;. Obviously, that&amp;rsquo;s not a challenging
+bar to clear. But it turns out that with some small tweaks, we can turn the fully random
+player into a formidable opponent for our starter models.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Entropy Regularization</title>
       <link>https://c-f-h.github.io/post/entropy-regularization/</link>

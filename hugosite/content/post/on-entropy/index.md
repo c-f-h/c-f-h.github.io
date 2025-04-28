@@ -129,7 +129,7 @@ Sadly, since we are using an on-policy algorithm, this doesn't really work for u
   \nabla \ell = -\frac{G \nabla p_a(s)}{p_a(s)}
 \]
 
-can become arbitrarily large, destabilizing training. (Refer back to the post on the
+can become very large, destabilizing training. (Refer back to the post on the
 [REINFORCE algorithm]({{< relref the-reinforce-algorithm >}})
 if you want to recall where this fomula came from.)
 

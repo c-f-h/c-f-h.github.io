@@ -6,8 +6,41 @@
     <description>Recent content in Python on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 24 Apr 2025 20:15:00 +0200</lastBuildDate>
+    <lastBuildDate>Mon, 28 Apr 2025 22:30:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Model Design for Connect 4</title>
+      <link>https://c-f-h.github.io/post/model-design/</link>
+      <pubDate>Mon, 28 Apr 2025 22:30:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/model-design/</guid>
+      <description>&lt;p&gt;With the &lt;a href=&#34;https://c-f-h.github.io/post/random-punisher/&#34;&gt;fearsome RandomPunisher&lt;/a&gt; putting our
+&lt;a href=&#34;https://c-f-h.github.io/post/entropy-regularization/&#34;&gt;first Connect 4 toy model&lt;/a&gt;
+in its place, it&amp;rsquo;s time to design something that stands a chance.&lt;/p&gt;
+&lt;h2 id=&#34;a-design-based-on-cnns&#34;&gt;A design based on CNNs&lt;/h2&gt;
+&lt;p&gt;It&amp;rsquo;s standard practice for board-game playing neural networks to have at least a few
+&lt;strong&gt;convolutional neural network (CNN)&lt;/strong&gt; layers at the initial inputs. This shouldn&amp;rsquo;t come as
+a surprise: the board is a regular grid, much like an image, and CNNs are strong performers
+in image processing. In our case, it will allow the model to learn features like
+&amp;ldquo;here are three of my pieces in a diagonal downward row&amp;rdquo; which are then automatically
+applied to every position on the board, rather than having to re-learn these features
+individually at each board position.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Introducing a Benchmark Opponent</title>
+      <link>https://c-f-h.github.io/post/random-punisher/</link>
+      <pubDate>Sat, 26 Apr 2025 09:50:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/random-punisher/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://c-f-h.github.io/post/entropy-regularization/&#34;&gt;Last time&lt;/a&gt; we saw how the entropy bonus
+enables self-play training without running into policy collapse.
+However, the model we trained was quite small and probably not capable of very strong play.
+Before we dive into the details of an improved model architecture, it would be very helpful
+to have a decent, fixed benchmark to gauge our progress.&lt;/p&gt;
+&lt;h2 id=&#34;a-benchmark-opponent&#34;&gt;A benchmark opponent&lt;/h2&gt;
+&lt;p&gt;The only model with fixed performance we have right now is the &lt;code&gt;RandomPlayer&lt;/code&gt; from the
+&lt;a href=&#34;https://c-f-h.github.io/post/basic-setup-and-play/&#34;&gt;basic setup post&lt;/a&gt;. Obviously, that&amp;rsquo;s not a challenging
+bar to clear. But it turns out that with some small tweaks, we can turn the fully random
+player into a formidable opponent for our starter models.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Entropy Regularization</title>
       <link>https://c-f-h.github.io/post/entropy-regularization/</link>

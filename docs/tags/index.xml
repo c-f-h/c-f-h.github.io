@@ -6,33 +6,33 @@
     <description>Recent content in Tags on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 24 Apr 2025 20:15:00 +0200</lastBuildDate>
+    <lastBuildDate>Mon, 28 Apr 2025 22:30:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>ML</title>
-      <link>https://c-f-h.github.io/tags/ml/</link>
-      <pubDate>Thu, 24 Apr 2025 20:15:00 +0200</pubDate>
-      <guid>https://c-f-h.github.io/tags/ml/</guid>
-      <description></description>
-    </item>
     <item>
       <title>Python</title>
       <link>https://c-f-h.github.io/tags/python/</link>
-      <pubDate>Thu, 24 Apr 2025 20:15:00 +0200</pubDate>
+      <pubDate>Mon, 28 Apr 2025 22:30:00 +0200</pubDate>
       <guid>https://c-f-h.github.io/tags/python/</guid>
       <description></description>
     </item>
     <item>
       <title>PyTorch</title>
       <link>https://c-f-h.github.io/tags/pytorch/</link>
-      <pubDate>Thu, 24 Apr 2025 20:15:00 +0200</pubDate>
+      <pubDate>Mon, 28 Apr 2025 22:30:00 +0200</pubDate>
       <guid>https://c-f-h.github.io/tags/pytorch/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>ML</title>
+      <link>https://c-f-h.github.io/tags/ml/</link>
+      <pubDate>Sat, 26 Apr 2025 09:50:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/tags/ml/</guid>
       <description></description>
     </item>
     <item>
       <title>RL</title>
       <link>https://c-f-h.github.io/tags/rl/</link>
-      <pubDate>Thu, 24 Apr 2025 20:15:00 +0200</pubDate>
+      <pubDate>Sat, 26 Apr 2025 09:50:00 +0200</pubDate>
       <guid>https://c-f-h.github.io/tags/rl/</guid>
       <description></description>
     </item>
