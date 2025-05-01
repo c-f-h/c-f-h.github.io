@@ -6,8 +6,30 @@
     <description>Recent content in Math on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 23 Apr 2025 20:57:00 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 29 Apr 2025 08:42:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/math/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>REINFORCE with Baseline</title>
+      <link>https://c-f-h.github.io/post/reinforce-with-baseline/</link>
+      <pubDate>Tue, 29 Apr 2025 08:42:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/reinforce-with-baseline/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://c-f-h.github.io/post/model-design/&#34;&gt;In the previous post&lt;/a&gt;, we introduced a stronger model
+but observed that it&amp;rsquo;s quite challenging to achieve
+a high level of play with &lt;a href=&#34;https://c-f-h.github.io/post/the-reinforce-algorithm/&#34;&gt;basic REINFORCE&lt;/a&gt;,
+due to the high variance and noisy gradients of the algorithm which often lead to unstable
+learning and slow convergence.
+Our first step towards more advanced algorithms is a modification called
+&amp;ldquo;REINFORCE with baseline&amp;rdquo; (see, e.g.,
+&lt;a href=&#34;https://proceedings.neurips.cc/paper_files/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf&#34;&gt;Sutton et al. (2000)&lt;/a&gt;).&lt;/p&gt;
+&lt;h2 id=&#34;the-value-network&#34;&gt;The value network&lt;/h2&gt;
+&lt;p&gt;Given a board state \(s\), &lt;a href=&#34;https://c-f-h.github.io/post/basic-setup-and-play/&#34;&gt;recall that&lt;/a&gt; our model
+currently outputs seven raw logits which are then
+transformed via softmax into the probability distribution \(p(s)\) over the seven possible
+moves. Many advanced algorithms in RL assume that our network also outputs
+a second piece of information: the &lt;strong&gt;value&lt;/strong&gt; \(v(s)\), a number between -1 and 1 which,
+roughly speaking, gives an estimate of how confident the model is in winning from the
+current position.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>On Entropy</title>
       <link>https://c-f-h.github.io/post/on-entropy/</link>

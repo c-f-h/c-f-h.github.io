@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>REINFORCE with Baseline | cfh::blog</title>
+<meta name="keywords" content="Math, ML, RL">
+<meta name="description" content="In the previous post, we introduced a stronger model
+but observed that it&rsquo;s quite challenging to achieve
+a high level of play with basic REINFORCE,
+due to the high variance and noisy gradients of the algorithm which often lead to unstable
+learning and slow convergence.
+Our first step towards more advanced algorithms is a modification called
+&ldquo;REINFORCE with baseline&rdquo; (see, e.g.,
+Sutton et al. (2000)).
+The value network
+Given a board state \(s\), recall that our model
+currently outputs seven raw logits which are then
+transformed via softmax into the probability distribution \(p(s)\) over the seven possible
+moves. Many advanced algorithms in RL assume that our network also outputs
+a second piece of information: the value \(v(s)\), a number between -1 and 1 which,
+roughly speaking, gives an estimate of how confident the model is in winning from the
+current position.">
+<meta name="author" content="cfh">
+<link rel="canonical" href="https://c-f-h.github.io/post/reinforce-with-baseline/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://c-f-h.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://c-f-h.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/reinforce-with-baseline/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><head>
+  
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  
+      inlineMath: [['\\(', '\\)']]                  
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+</script>
+  
+  
+  
+</head><meta property="og:url" content="https://c-f-h.github.io/post/reinforce-with-baseline/">
+  <meta property="og:site_name" content="cfh::blog">
+  <meta property="og:title" content="REINFORCE with Baseline">
+  <meta property="og:description" content="In the previous post, we introduced a stronger model but observed that it’s quite challenging to achieve a high level of play with basic REINFORCE, due to the high variance and noisy gradients of the algorithm which often lead to unstable learning and slow convergence. Our first step towards more advanced algorithms is a modification called “REINFORCE with baseline” (see, e.g., Sutton et al. (2000)).
+The value network Given a board state \(s\), recall that our model currently outputs seven raw logits which are then transformed via softmax into the probability distribution \(p(s)\) over the seven possible moves. Many advanced algorithms in RL assume that our network also outputs a second piece of information: the value \(v(s)\), a number between -1 and 1 which, roughly speaking, gives an estimate of how confident the model is in winning from the current position.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2025-04-29T08:42:00+02:00">
+    <meta property="article:modified_time" content="2025-04-29T08:42:00+02:00">
+    <meta property="article:tag" content="Math">
+    <meta property="article:tag" content="ML">
+    <meta property="article:tag" content="RL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="REINFORCE with Baseline">
+<meta name="twitter:description" content="In the previous post, we introduced a stronger model
+but observed that it&rsquo;s quite challenging to achieve
+a high level of play with basic REINFORCE,
+due to the high variance and noisy gradients of the algorithm which often lead to unstable
+learning and slow convergence.
+Our first step towards more advanced algorithms is a modification called
+&ldquo;REINFORCE with baseline&rdquo; (see, e.g.,
+Sutton et al. (2000)).
+The value network
+Given a board state \(s\), recall that our model
+currently outputs seven raw logits which are then
+transformed via softmax into the probability distribution \(p(s)\) over the seven possible
+moves. Many advanced algorithms in RL assume that our network also outputs
+a second piece of information: the value \(v(s)\), a number between -1 and 1 which,
+roughly speaking, gives an estimate of how confident the model is in winning from the
+current position.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://c-f-h.github.io/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "REINFORCE with Baseline",
+      "item": "https://c-f-h.github.io/post/reinforce-with-baseline/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "REINFORCE with Baseline",
+  "name": "REINFORCE with Baseline",
+  "description": "In the previous post, we introduced a stronger model but observed that it\u0026rsquo;s quite challenging to achieve a high level of play with basic REINFORCE, due to the high variance and noisy gradients of the algorithm which often lead to unstable learning and slow convergence. Our first step towards more advanced algorithms is a modification called \u0026ldquo;REINFORCE with baseline\u0026rdquo; (see, e.g., Sutton et al. (2000)).\nThe value network Given a board state \\(s\\), recall that our model currently outputs seven raw logits which are then transformed via softmax into the probability distribution \\(p(s)\\) over the seven possible moves. Many advanced algorithms in RL assume that our network also outputs a second piece of information: the value \\(v(s)\\), a number between -1 and 1 which, roughly speaking, gives an estimate of how confident the model is in winning from the current position.\n",
+  "keywords": [
+    "Math", "ML", "RL"
+  ],
+  "articleBody": "In the previous post, we introduced a stronger model but observed that it’s quite challenging to achieve a high level of play with basic REINFORCE, due to the high variance and noisy gradients of the algorithm which often lead to unstable learning and slow convergence. Our first step towards more advanced algorithms is a modification called “REINFORCE with baseline” (see, e.g., Sutton et al. (2000)).\nThe value network Given a board state \\(s\\), recall that our model currently outputs seven raw logits which are then transformed via softmax into the probability distribution \\(p(s)\\) over the seven possible moves. Many advanced algorithms in RL assume that our network also outputs a second piece of information: the value \\(v(s)\\), a number between -1 and 1 which, roughly speaking, gives an estimate of how confident the model is in winning from the current position.\nThere are different ways to implement this: there could be an entirely separate value network, or, more commonly, a separate value head is attached to the CNN feature layers, in parallel to the already existing MLP policy head which outputs the move logits.1 This way the already computed features can be reused for estimating the board state value. We’ll get into the technical implementation for our particular model later. For now, the schematic below should illustrate the general idea.\nP o l i O c u y t p F h u e e t a a : t d u ( I r p n e o p l u l i t a c y y e V , r a s l v u a e l u h e e ) a d Schematic of two 'heads', one for policy and one for value, being attached to the same base feature layers.\nWe’ll have to answer two questions at this point: how to train this value network, and how it can help us to improve the RL update.\nTraining the value network Recall that each board state in the REINFORCE policy update is already associated with a “return” \\(G \\in [-1,1]\\) which gives us some information on how we are doing in the current board state. Since we used discounted returns, \\(G\\) increases for every move in a winning game until a final value of \\(+1\\), whereas for a losing game it decreases to a final value of \\(-1\\).\nThis is a clear candidate to train our value network on: we can simply use the squared error \\((G - v(s))^2\\) as the loss function which, when minimized, pushes the output \\(v(s)\\) of the value network towards the observed return \\(G\\) for the current state \\(s\\). Since we already have a loss function for the policy network, as well as a second loss term from entropy regularization which encourages exploration, we add this third term on top of that, scaled with a parameter \\(\\alpha\\), the value loss weight. A typical value for this hyperparameter is \\(\\alpha=0.5\\). So our loss function for a single sample becomes\n\\[\r\\ell = \\underbrace{-G \\log p_a(s)}_{\\textsf{policy loss}}\r+ \\underbrace{\\alpha (G - v(s))^2}_{\\textsf{value loss}}\r- \\underbrace{\\beta H(p(s))}_{\\textsf{entropy bonus}}.\r\\]Minimizing this term via gradient descent should therefore find a balance between training our policy to make better moves, training the value network to predict the return, and keeping move entropy sufficiently high.\nIn this formulation, we are training the value network, but we are not directly using it to improve the policy network. It’s plausible that by attaching it to our feature layers, we are learning better features and therefore indirectly slightly improving the policy as well. Nevertheless, we can get more benefits out of the value network by using it directly during the policy update as well, as we will see below.\nMonte Carlo sampling The way we obtain value estimates in this version of the algorithm is by sampling many possible games and using the direct, observed outcome in the form of the return \\(G\\) to estimate the value. This is known as a Monte Carlo method, named after the famous casino, where many outcomes are randomly sampled and some form of statistic is derived from these samples.\nA crucial point is that this method has relatively high variance: every new game we sample starting from a fixed state \\(s\\) can lead to wildly varying outcomes. On the other hand, it has low bias because we use the true returns (which are only available after finishing the current game) without any further approximations. In other words: we need many samples to arrive at a good estimation of the value (because of the high variance), but once we have collected them, the estimate of the true value is very accurate (low bias).\nLater in the series, we will encounter ways to trade off lower variance against a higher bias. For now, though, we stick with Monte Carlo sampling.\nThe high variance in the observed returns \\(G\\) is precisely why the basic REINFORCE algorithm suffers from noisy updates. As we’ll see next, using a learned baseline \\(v(s)\\) helps mitigate the noisiness of the policy update, even though \\(v(s)\\) itself is learned from noisy returns.\nUsing value to estimate advantage The core idea of REINFORCE with baseline is to use the observed advantage as the reward scaling for the policy loss, where the advantage \\(A\\) is defined as the difference between the actual return of the current move minus the model’s value estimate, i.e.,\n\\[\rA = G - v(s).\r\\]The total loss function for REINFORCE with baseline is therefore the slight modification\n\\[\r\\ell = \\underbrace{-(G - v(s)) \\log p_a(s)}_{\\textsf{policy loss}}\r+ \\underbrace{\\alpha (G - v(s))^2}_{\\textsf{value loss}}\r- \\underbrace{\\beta H(p(s))}_{\\textsf{entropy bonus}}.\r\\]The factor before the \\(\\log\\) in the policy loss indicates how strongly the move we made in state \\(s\\) is rewarded or punished. Let’s go through a few examples to understand how this modified term makes sense.\nSome practical examples on advantage Assume the model finds itself in a state which it evaluates as roughly even, meaning it assigns a value \\(v(s)\\approx0\\). However, the action \\(a\\) it took in this state left it in a very advantageous position close to winning, and therefore the actual return \\(G\\) is close to \\(1\\). Then two things happen: first, as discussed above, the value loss will push \\(v(s)\\) higher to reflect that there is a good move in the current state \\(s\\) which is likely to lead to a win. Second, the move will be rewarded with an advantage \\(A\\) close to one to make the model more likely to play this “surprisingly good” move in the future.\nOn the other hand, if the model thought it was doing well (\\(v(s)\u003e0\\)) but the move it chose was a blunder and therefore \\(G\u003c0\\), the advantage will be negative. In fact, the model will be punished even more severely for this move than in the basic algorithm because \\(A\\) is even more negative than \\(G\\), which is exactly what we want in order to discourage this “surprisingly bad” move.\nThere is one effect that may be counterintuitive at first: if the model is in a winning position and does play the winning move, then both \\(v(s)\\) and \\(G\\) are close to \\(1\\) and therefore the advantage \\(A\\) is roughly zero. This means the model no longer receives additional rewards for playing the move it already knows wins the game. But in fact that’s fine: the model already knows how to win from here, we don’t need to keep pushing the model output for this move higher and higher. By not placing a high reward on the obvious thing to do, the gradient signal is stronger for moves which actually lead to a better than expected outcome. Also, if the model ever deviates from the winning move, the punishment will be severe because then \\(A\\) falls off sharply.\nThe general idea is that because \\(v(s)\\) already captures some information about the expected return \\(G\\), typically \\(A\\) will have smaller fluctuations than the return \\(G\\) itself. This is known as variance reduction and is exactly what makes the algorithm with baseline more robust and less noisy compared to basic REINFORCE.\nAs an example we have encountered in our Connect 4 context, the baseline can help the model to better learn defensive moves. If the model assigns negative value to three opposing pieces being in a row because it usually loses from there, then finding the saving move that blocks the opponent’s win will yield a high advantage and reward this move strongly.\nHopefully, this should clarify the basic theory behind REINFORCE with baseline. In the next post, we’ll actually implement and evaluate the algorithm.\nHere “head” refers to a small network module attached to the shared feature layers that produces a particular kind of output. ↩︎\n",
+  "wordCount" : "1456",
+  "inLanguage": "en",
+  "datePublished": "2025-04-29T08:42:00+02:00",
+  "dateModified": "2025-04-29T08:42:00+02:00",
+  "author":{
+    "@type": "Person",
+    "name": "cfh"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://c-f-h.github.io/post/reinforce-with-baseline/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "cfh::blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://c-f-h.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://c-f-h.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://c-f-h.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/post/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      REINFORCE with Baseline
+    </h1>
+    <div class="post-meta"><span title='2025-04-29 08:42:00 +0200 +0200'>April 29, 2025</span>&nbsp;·&nbsp;cfh
+
+</div>
+  </header> 
+  <div class="post-content"><p><a href="/post/model-design/">In the previous post</a>, we introduced a stronger model
+but observed that it&rsquo;s quite challenging to achieve
+a high level of play with <a href="/post/the-reinforce-algorithm/">basic REINFORCE</a>,
+due to the high variance and noisy gradients of the algorithm which often lead to unstable
+learning and slow convergence.
+Our first step towards more advanced algorithms is a modification called
+&ldquo;REINFORCE with baseline&rdquo; (see, e.g.,
+<a href="https://proceedings.neurips.cc/paper_files/paper/1999/file/464d828b85b0bed98e80ade0a5c43b0f-Paper.pdf">Sutton et al. (2000)</a>).</p>
+<h2 id="the-value-network">The value network<a hidden class="anchor" aria-hidden="true" href="#the-value-network">#</a></h2>
+<p>Given a board state \(s\), <a href="/post/basic-setup-and-play/">recall that</a> our model
+currently outputs seven raw logits which are then
+transformed via softmax into the probability distribution \(p(s)\) over the seven possible
+moves. Many advanced algorithms in RL assume that our network also outputs
+a second piece of information: the <strong>value</strong> \(v(s)\), a number between -1 and 1 which,
+roughly speaking, gives an estimate of how confident the model is in winning from the
+current position.</p>
+<p>There are different ways to implement this: there could be an entirely separate value
+network, or, more commonly, a separate <strong>value head</strong> is attached to the CNN feature layers,
+in parallel to the already existing MLP <strong>policy head</strong> which outputs the move logits.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>
+This way the already computed
+features can be reused for estimating the board state value. We&rsquo;ll get into the
+technical implementation for our particular model later. For now, the schematic below
+should illustrate the general idea.</p>
+
+
+
+
+<figure id="diagram-1">
+  
+    <svg class="diagram" width="312" height="297"  xmlns="http://www.w3.org/2000/svg" version="1.1">
+      <g transform='translate(8,16)'>
+<path d='M 88,0 L 248,0' fill='none' stroke='currentColor'></path>
+<path d='M 88,32 L 168,32' fill='none' stroke='currentColor'></path>
+<path d='M 168,32 L 248,32' fill='none' stroke='currentColor'></path>
+<path d='M 40,80 L 296,80' fill='none' stroke='currentColor'></path>
+<path d='M 40,112 L 112,112' fill='none' stroke='currentColor'></path>
+<path d='M 112,112 L 224,112' fill='none' stroke='currentColor'></path>
+<path d='M 224,112 L 296,112' fill='none' stroke='currentColor'></path>
+<path d='M 40,160 L 152,160' fill='none' stroke='currentColor'></path>
+<path d='M 184,160 L 296,160' fill='none' stroke='currentColor'></path>
+<path d='M 40,192 L 112,192' fill='none' stroke='currentColor'></path>
+<path d='M 112,192 L 152,192' fill='none' stroke='currentColor'></path>
+<path d='M 184,192 L 224,192' fill='none' stroke='currentColor'></path>
+<path d='M 224,192 L 296,192' fill='none' stroke='currentColor'></path>
+<path d='M 40,240 L 296,240' fill='none' stroke='currentColor'></path>
+<path d='M 40,272 L 112,272' fill='none' stroke='currentColor'></path>
+<path d='M 112,272 L 224,272' fill='none' stroke='currentColor'></path>
+<path d='M 224,272 L 296,272' fill='none' stroke='currentColor'></path>
+<path d='M 40,80 L 40,112' fill='none' stroke='currentColor'></path>
+<path d='M 40,160 L 40,192' fill='none' stroke='currentColor'></path>
+<path d='M 40,240 L 40,272' fill='none' stroke='currentColor'></path>
+<path d='M 88,0 L 88,32' fill='none' stroke='currentColor'></path>
+<path d='M 112,112 L 112,144' fill='none' stroke='currentColor'></path>
+<path d='M 112,192 L 112,224' fill='none' stroke='currentColor'></path>
+<path d='M 152,160 L 152,192' fill='none' stroke='currentColor'></path>
+<path d='M 168,32 L 168,64' fill='none' stroke='currentColor'></path>
+<path d='M 184,160 L 184,192' fill='none' stroke='currentColor'></path>
+<path d='M 224,112 L 224,144' fill='none' stroke='currentColor'></path>
+<path d='M 224,192 L 224,224' fill='none' stroke='currentColor'></path>
+<path d='M 248,0 L 248,32' fill='none' stroke='currentColor'></path>
+<path d='M 296,80 L 296,112' fill='none' stroke='currentColor'></path>
+<path d='M 296,160 L 296,192' fill='none' stroke='currentColor'></path>
+<path d='M 296,240 L 296,272' fill='none' stroke='currentColor'></path>
+<path d='M 112,144 L 112,152' fill='none' stroke='currentColor'></path>
+<polygon points='128.000000,144.000000 116.000000,138.399994 116.000000,149.600006' fill='currentColor' transform='rotate(90.000000, 112.000000, 144.000000)'></polygon>
+<path d='M 112,224 L 112,232' fill='none' stroke='currentColor'></path>
+<polygon points='128.000000,224.000000 116.000000,218.399994 116.000000,229.600006' fill='currentColor' transform='rotate(90.000000, 112.000000, 224.000000)'></polygon>
+<path d='M 168,64 L 168,72' fill='none' stroke='currentColor'></path>
+<polygon points='184.000000,64.000000 172.000000,58.400002 172.000000,69.599998' fill='currentColor' transform='rotate(90.000000, 168.000000, 64.000000)'></polygon>
+<path d='M 224,144 L 224,152' fill='none' stroke='currentColor'></path>
+<polygon points='240.000000,144.000000 228.000000,138.399994 228.000000,149.600006' fill='currentColor' transform='rotate(90.000000, 224.000000, 144.000000)'></polygon>
+<path d='M 224,224 L 224,232' fill='none' stroke='currentColor'></path>
+<polygon points='240.000000,224.000000 228.000000,218.399994 228.000000,229.600006' fill='currentColor' transform='rotate(90.000000, 224.000000, 224.000000)'></polygon>
+<text text-anchor='middle' x='56' y='180' fill='currentColor' style='font-size:1em'>P</text>
+<text text-anchor='middle' x='64' y='180' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='72' y='180' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='80' y='180' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='80' y='260' fill='currentColor' style='font-size:1em'>O</text>
+<text text-anchor='middle' x='88' y='180' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='88' y='260' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='96' y='180' fill='currentColor' style='font-size:1em'>y</text>
+<text text-anchor='middle' x='96' y='260' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='104' y='260' fill='currentColor' style='font-size:1em'>p</text>
+<text text-anchor='middle' x='112' y='100' fill='currentColor' style='font-size:1em'>F</text>
+<text text-anchor='middle' x='112' y='180' fill='currentColor' style='font-size:1em'>h</text>
+<text text-anchor='middle' x='112' y='260' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='120' y='100' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='120' y='180' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='120' y='260' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='128' y='100' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='128' y='180' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='128' y='260' fill='currentColor' style='font-size:1em'>:</text>
+<text text-anchor='middle' x='136' y='100' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='136' y='180' fill='currentColor' style='font-size:1em'>d</text>
+<text text-anchor='middle' x='144' y='100' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='144' y='260' fill='currentColor' style='font-size:1em'>(</text>
+<text text-anchor='middle' x='152' y='20' fill='currentColor' style='font-size:1em'>I</text>
+<text text-anchor='middle' x='152' y='100' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='152' y='260' fill='currentColor' style='font-size:1em'>p</text>
+<text text-anchor='middle' x='160' y='20' fill='currentColor' style='font-size:1em'>n</text>
+<text text-anchor='middle' x='160' y='100' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='160' y='260' fill='currentColor' style='font-size:1em'>o</text>
+<text text-anchor='middle' x='168' y='20' fill='currentColor' style='font-size:1em'>p</text>
+<text text-anchor='middle' x='168' y='260' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='176' y='20' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='176' y='100' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='176' y='260' fill='currentColor' style='font-size:1em'>i</text>
+<text text-anchor='middle' x='184' y='20' fill='currentColor' style='font-size:1em'>t</text>
+<text text-anchor='middle' x='184' y='100' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='184' y='260' fill='currentColor' style='font-size:1em'>c</text>
+<text text-anchor='middle' x='192' y='100' fill='currentColor' style='font-size:1em'>y</text>
+<text text-anchor='middle' x='192' y='260' fill='currentColor' style='font-size:1em'>y</text>
+<text text-anchor='middle' x='200' y='100' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='200' y='180' fill='currentColor' style='font-size:1em'>V</text>
+<text text-anchor='middle' x='200' y='260' fill='currentColor' style='font-size:1em'>,</text>
+<text text-anchor='middle' x='208' y='100' fill='currentColor' style='font-size:1em'>r</text>
+<text text-anchor='middle' x='208' y='180' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='216' y='100' fill='currentColor' style='font-size:1em'>s</text>
+<text text-anchor='middle' x='216' y='180' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='216' y='260' fill='currentColor' style='font-size:1em'>v</text>
+<text text-anchor='middle' x='224' y='180' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='224' y='260' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='232' y='180' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='232' y='260' fill='currentColor' style='font-size:1em'>l</text>
+<text text-anchor='middle' x='240' y='260' fill='currentColor' style='font-size:1em'>u</text>
+<text text-anchor='middle' x='248' y='180' fill='currentColor' style='font-size:1em'>h</text>
+<text text-anchor='middle' x='248' y='260' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='256' y='180' fill='currentColor' style='font-size:1em'>e</text>
+<text text-anchor='middle' x='256' y='260' fill='currentColor' style='font-size:1em'>)</text>
+<text text-anchor='middle' x='264' y='180' fill='currentColor' style='font-size:1em'>a</text>
+<text text-anchor='middle' x='272' y='180' fill='currentColor' style='font-size:1em'>d</text>
+</g>
+
+    </svg>
+  
+  <figcaption><p>Schematic of two &#39;heads&#39;, one for policy and one for value, being attached to the same base feature layers.</p></figcaption>
+</figure><p>We&rsquo;ll have to answer two questions at this point: how to train this value network,
+and how it can help us to improve the RL update.</p>
+<h2 id="training-the-value-network">Training the value network<a hidden class="anchor" aria-hidden="true" href="#training-the-value-network">#</a></h2>
+<p>Recall that each board state in the REINFORCE policy update is
+<a href="/post/the-reinforce-algorithm/#assigning-returns">already associated</a>
+with a &ldquo;return&rdquo; \(G \in [-1,1]\) which gives us some information on how we are doing in
+the current board state. Since we used discounted returns, \(G\) increases for
+every move in a winning game until a final value of \(+1\), whereas for a losing game
+it decreases to a final value of \(-1\).</p>
+<p>This is a clear candidate to train our value network on: we can simply use the squared
+error \((G - v(s))^2\) as the loss function which, when minimized,
+pushes the output \(v(s)\) of the
+value network towards the observed return \(G\) for the current state \(s\).
+Since we already have a loss function for the policy network,
+as well as a second loss term from
+<a href="/post/on-entropy/#entropy-regularization">entropy regularization</a> which
+encourages exploration,
+we add this third
+term on top of that, scaled with a parameter \(\alpha\), the value loss weight.
+A typical value for this hyperparameter is \(\alpha=0.5\).
+So our loss function for a single sample becomes</p>
+\[
+    \ell = \underbrace{-G \log p_a(s)}_{\textsf{policy loss}}
+    + \underbrace{\alpha (G - v(s))^2}_{\textsf{value loss}}
+    - \underbrace{\beta H(p(s))}_{\textsf{entropy bonus}}.
+\]<p>Minimizing this term via gradient descent should therefore find a balance between
+training our policy to make better moves, training the value network to predict the return,
+and keeping move entropy sufficiently high.</p>
+<p>In this formulation, we are training the value network, but we are not directly using it
+to improve the policy network. It&rsquo;s plausible that by attaching it to our feature layers,
+we are learning better features and therefore indirectly
+slightly improving the policy as well. Nevertheless, we can get more benefits out of the
+value network by using it directly during the policy update as well, as we will see below.</p>
+<h3 id="monte-carlo-sampling">Monte Carlo sampling<a hidden class="anchor" aria-hidden="true" href="#monte-carlo-sampling">#</a></h3>
+<p>The way we obtain value estimates in this version of the algorithm is by sampling many
+possible games and using the direct, observed outcome in the form of the return \(G\)
+to estimate the value. This is known as a
+<a href="https://en.wikipedia.org/wiki/Monte_Carlo_method">Monte Carlo method</a>, named after the
+famous casino, where many outcomes are randomly sampled and some form of statistic is
+derived from these samples.</p>
+<p>A crucial point is that this method has relatively <strong>high variance:</strong>
+every new game we sample starting from a fixed state \(s\) can lead to wildly
+varying outcomes.
+On the other hand, it has <strong>low bias</strong> because we use the true returns (which are only
+available after finishing the current game) without any further approximations.
+In other words: we need many samples to arrive at a good estimation
+of the value (because of the high variance), but once we have collected them, the
+estimate of the true value is very accurate (low bias).</p>
+<p>Later in the series, we will encounter ways to trade off lower variance against a higher
+bias. For now, though, we stick with Monte Carlo sampling.</p>
+<p>The high variance in the observed returns \(G\)
+is precisely why the basic REINFORCE algorithm suffers from noisy updates.
+As we&rsquo;ll see next, using a learned baseline \(v(s)\)
+helps mitigate the noisiness of the policy update, even though \(v(s)\)
+itself is learned from noisy returns.</p>
+<h2 id="using-value-to-estimate-advantage">Using value to estimate advantage<a hidden class="anchor" aria-hidden="true" href="#using-value-to-estimate-advantage">#</a></h2>
+<p>The core idea of REINFORCE with baseline is to use the observed <strong>advantage</strong> as the
+reward scaling for the policy loss, where the advantage \(A\) is defined as the difference
+between the actual return of the current move minus the model&rsquo;s value estimate, i.e.,</p>
+\[
+    A = G - v(s).
+\]<p>The total loss function for REINFORCE with baseline is therefore the slight modification</p>
+\[
+    \ell = \underbrace{-(G - v(s)) \log p_a(s)}_{\textsf{policy loss}}
+    + \underbrace{\alpha (G - v(s))^2}_{\textsf{value loss}}
+    - \underbrace{\beta H(p(s))}_{\textsf{entropy bonus}}.
+\]<p>The factor before the \(\log\) in the policy loss indicates how strongly
+the move we made in state \(s\) is rewarded or punished. Let&rsquo;s go through a few examples
+to understand how this modified term makes sense.</p>
+<h3 id="some-practical-examples-on-advantage">Some practical examples on advantage<a hidden class="anchor" aria-hidden="true" href="#some-practical-examples-on-advantage">#</a></h3>
+<p>Assume the model finds itself in a state which it evaluates as roughly even, meaning
+it assigns a value \(v(s)\approx0\).
+However, the action \(a\) it took in this state left it in a very advantageous position
+close to winning, and therefore the actual return \(G\) is close to \(1\).
+Then two things happen: first, as discussed above, the value loss will push \(v(s)\)
+higher to reflect that there is a good move in the current state \(s\) which is likely
+to lead to a win. Second, the move will be rewarded with an advantage \(A\) close to
+one to make the model more likely to play this &ldquo;surprisingly good&rdquo; move in the future.</p>
+<p>On the other hand, if the model thought it was doing well (\(v(s)>0\)) but the move
+it chose was a blunder and therefore \(G<0\), the advantage will be negative. In fact,
+the model will be punished even more severely for this move than in the basic algorithm
+because \(A\) is even more negative than \(G\), which is exactly what we want in order to
+discourage this &ldquo;surprisingly bad&rdquo; move.</p>
+<p>There is one effect that may be counterintuitive at first: if the model is in
+a winning position and does play the winning move, then both \(v(s)\) and \(G\)
+are close to \(1\) and therefore the advantage \(A\) is roughly zero. This means the
+model no longer receives additional rewards for playing the move it already knows wins
+the game. But in fact that&rsquo;s fine: the model already knows how to win from here, we
+don&rsquo;t need to keep pushing the model output for this move higher and higher. By not
+placing a high reward on the obvious thing to do, the gradient signal is stronger
+for moves which actually lead to a better than expected outcome.
+Also, if the model ever deviates from the winning move, the punishment will be severe
+because then \(A\) falls off sharply.</p>
+<p>The general idea is that because \(v(s)\) already captures some information about the
+expected return
+\(G\), typically \(A\) will have smaller fluctuations than the return \(G\) itself.
+This is known as <strong>variance reduction</strong> and is exactly what makes the algorithm with
+baseline more robust and less noisy compared to basic REINFORCE.</p>
+<p>As an example we have encountered in our Connect 4 context, the baseline can help the
+model to better learn defensive moves. If the model assigns negative value to three opposing
+pieces being in a row because it usually loses from there, then finding the saving move
+that blocks the opponent&rsquo;s win will yield a high advantage and reward this move strongly.</p>
+<p>Hopefully, this should clarify the basic theory behind REINFORCE with baseline.
+In the next post, we&rsquo;ll actually implement and evaluate the algorithm.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>Here &ldquo;head&rdquo; refers to a small network module attached to the shared
+feature layers that produces a particular kind of output.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://c-f-h.github.io/tags/math/">Math</a></li>
+      <li><a href="https://c-f-h.github.io/tags/ml/">ML</a></li>
+      <li><a href="https://c-f-h.github.io/tags/rl/">RL</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://c-f-h.github.io/post/model-design/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Model Design for Connect 4</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://c-f-h.github.io/">cfh::blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

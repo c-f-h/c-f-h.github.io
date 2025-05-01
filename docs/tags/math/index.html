@@ -147,6 +147,20 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">REINFORCE with Baseline
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>In the previous post, we introduced a stronger model but observed that it’s quite challenging to achieve a high level of play with basic REINFORCE, due to the high variance and noisy gradients of the algorithm which often lead to unstable learning and slow convergence. Our first step towards more advanced algorithms is a modification called “REINFORCE with baseline” (see, e.g., Sutton et al. (2000)).
+The value network Given a board state \(s\), recall that our model currently outputs seven raw logits which are then transformed via softmax into the probability distribution \(p(s)\) over the seven possible moves. Many advanced algorithms in RL assume that our network also outputs a second piece of information: the value \(v(s)\), a number between -1 and 1 which, roughly speaking, gives an estimate of how confident the model is in winning from the current position.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-04-29 08:42:00 +0200 +0200'>April 29, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to REINFORCE with Baseline" href="https://c-f-h.github.io/post/reinforce-with-baseline/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">On Entropy
     </h2>
   </header>

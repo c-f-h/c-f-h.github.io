@@ -332,7 +332,8 @@ against a model that behaves just one or two steps removed from random.
 The issue is that the basic REINFORCE algorithm is well known to be quite noisy, and this
 is also evident in the training plots as well as in the difficulty of choosing good
 hyperparameters for the optimization.[^2] If we want more robust training and better final
-performance, we'll have to graduate to more advanced RL algorithms.
+performance, we'll have to graduate to
+[more advanced RL algorithms.]({{< relref reinforce-with-baseline >}})
 
 [^2]: It's hard to make definitive statements of the kind that no better performance is
 possible using the present setup. Certainly, with much longer training and very careful
