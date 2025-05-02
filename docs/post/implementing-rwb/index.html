@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Implementing and Evaluating REINFORCE with Baseline | cfh::blog</title>
+<meta name="keywords" content="Python, PyTorch, ML, RL">
+<meta name="description" content="Having introduced REINFORCE with baseline on a
+conceptual level, let&rsquo;s implement it for our Connect 4-playing CNN model.
+Adding the value head
+In the constructor of the Connect4CNN model class,
+we set up the new network for estimating the board state value \(v(s)\)
+which will consume the same 448 downsampled features that the policy head receives:
+        self.value_head = nn.Sequential(
+            nn.Linear(64 * 7, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+            nn.Tanh()
+        )
+It&rsquo;s very similar in structure to the MLP policy head, with some minor differences:">
+<meta name="author" content="cfh">
+<link rel="canonical" href="https://c-f-h.github.io/post/implementing-rwb/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.024295b3c968fbd469a11050839fd375a96747c3a5cff215e7f577090fe610f8.css" integrity="sha256-AkKVs8lo&#43;9RpoRBQg5/TdalnR8Olz/IV5/V3CQ/mEPg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://c-f-h.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://c-f-h.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://c-f-h.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://c-f-h.github.io/post/implementing-rwb/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><head>
+  
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  
+      inlineMath: [['\\(', '\\)']]                  
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+</script>
+  
+  
+  <link rel="stylesheet" href="/connect4/connect4-game.css">
+  <script src="/connect4/connect4-game.js"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+  
+</head><meta property="og:url" content="https://c-f-h.github.io/post/implementing-rwb/">
+  <meta property="og:site_name" content="cfh::blog">
+  <meta property="og:title" content="Implementing and Evaluating REINFORCE with Baseline">
+  <meta property="og:description" content="Having introduced REINFORCE with baseline on a conceptual level, let’s implement it for our Connect 4-playing CNN model.
+Adding the value head In the constructor of the Connect4CNN model class, we set up the new network for estimating the board state value \(v(s)\) which will consume the same 448 downsampled features that the policy head receives:
+self.value_head = nn.Sequential( nn.Linear(64 * 7, 64), nn.ReLU(), nn.Linear(64, 64), nn.ReLU(), nn.Linear(64, 1), nn.Tanh() ) It’s very similar in structure to the MLP policy head, with some minor differences:">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2025-05-01T23:05:00+02:00">
+    <meta property="article:modified_time" content="2025-05-01T23:05:00+02:00">
+    <meta property="article:tag" content="Python">
+    <meta property="article:tag" content="PyTorch">
+    <meta property="article:tag" content="ML">
+    <meta property="article:tag" content="RL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Implementing and Evaluating REINFORCE with Baseline">
+<meta name="twitter:description" content="Having introduced REINFORCE with baseline on a
+conceptual level, let&rsquo;s implement it for our Connect 4-playing CNN model.
+Adding the value head
+In the constructor of the Connect4CNN model class,
+we set up the new network for estimating the board state value \(v(s)\)
+which will consume the same 448 downsampled features that the policy head receives:
+        self.value_head = nn.Sequential(
+            nn.Linear(64 * 7, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+            nn.Tanh()
+        )
+It&rsquo;s very similar in structure to the MLP policy head, with some minor differences:">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://c-f-h.github.io/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Implementing and Evaluating REINFORCE with Baseline",
+      "item": "https://c-f-h.github.io/post/implementing-rwb/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Implementing and Evaluating REINFORCE with Baseline",
+  "name": "Implementing and Evaluating REINFORCE with Baseline",
+  "description": "Having introduced REINFORCE with baseline on a conceptual level, let\u0026rsquo;s implement it for our Connect 4-playing CNN model.\nAdding the value head In the constructor of the Connect4CNN model class, we set up the new network for estimating the board state value \\(v(s)\\) which will consume the same 448 downsampled features that the policy head receives:\nself.value_head = nn.Sequential( nn.Linear(64 * 7, 64), nn.ReLU(), nn.Linear(64, 64), nn.ReLU(), nn.Linear(64, 1), nn.Tanh() ) It\u0026rsquo;s very similar in structure to the MLP policy head, with some minor differences:\n",
+  "keywords": [
+    "Python", "PyTorch", "ML", "RL"
+  ],
+  "articleBody": "Having introduced REINFORCE with baseline on a conceptual level, let’s implement it for our Connect 4-playing CNN model.\nAdding the value head In the constructor of the Connect4CNN model class, we set up the new network for estimating the board state value \\(v(s)\\) which will consume the same 448 downsampled features that the policy head receives:\nself.value_head = nn.Sequential( nn.Linear(64 * 7, 64), nn.ReLU(), nn.Linear(64, 64), nn.ReLU(), nn.Linear(64, 1), nn.Tanh() ) It’s very similar in structure to the MLP policy head, with some minor differences:\nWe use 64 neurons on the two hidden layers instead of 128 since estimating value is presumably an easier task than finding the best next move. We omit the layer normalization since it doesn’t seem to provide any significant benefits for the value head. There is only a single output, and we apply a tanh activation function to it which gives us exactly the range \\([-1,1]\\) that we want the value \\(v(s)\\) to have. The tanh function\nIn the forward method of the model class, we apply the value head to the features and return both policy and value:\n# ... code as before ... # Apply residual CNN blocks x = F.relu(self.resblock1(x) + x) x = F.relu(self.resblock2(x) + x) x = F.relu(self.resblock3(x) + x) # Downsample columnwise: (B, 64, 1, 7) -\u003e (B, 7 * 64) x = self.downsample(x).view(-1, 7 * 64) # Fully connected layers (MLP head, outputs logits): (B, 7) p = self.fc_layers(x) # Value head: (B, 1) -\u003e (B,) v = self.value_head(x).squeeze(-1) if len(original_shape) == 2: # Remove singleton batch dimension p = p.squeeze(0) v = v.squeeze(0) return p, v All that has changed here is that we invoke the new value head with the same input that also the policy head receives. We then return both policy and value as a tuple (p, v).\nImplementing the new update function We previously already modified the update_policy function from the basic REINFORCE algorithm by introducing entropy regularization; now we make a few further adjustments as follows:\n# compute model outputs for the batch logits, value = model(states) # mask out illegal moves and compute logprobs of the actually taken actions masked_logits = mask_invalid_moves_batch(states, logits, mask_value=-1e9) # (B, 7) log_probs = F.log_softmax(masked_logits, dim=1) # (B, 7) entropy = -(log_probs * torch.exp(log_probs)).sum(1) # (B,) # select log probs of actually taken actions: (B, 7) -\u003e (B, 1) -\u003e (B,) log_probs_taken = torch.gather(log_probs, dim=1, index=actions.unsqueeze(1)).squeeze(1) # (B,) # calculate RwB loss = -sum(A_t * log p_(a_t)(s_t), t) ## IMPORTANT! Detach so gradients don't flow back into the value network advantage = (returns - value).detach() policy_loss = -(advantage * log_probs_taken).sum() # reinforce with baseline: estimate value from Monte Carlo samples value_loss = F.mse_loss(value, returns, reduction='sum') total_loss = policy_loss + VALUE_LOSS_WEIGHT * value_loss \\ - ENTROPY_BONUS * entropy.sum() # perform gradient update optimizer.zero_grad() total_loss.backward() optimizer.step() The salient changes here are:\nThe model now outputs two tensors: logits, value = model(states). The logits are converted into probabilities as before. We compute the observed advantage using (returns - value).detach(). Detaching the tensor is an important step! It tells PyTorch that we don’t want gradients to flow back via this tensor into the value network during backpropagation. Rather, we simply want to plug the numerical value of the advantage into the policy update function. Otherwise, the policy update could modify the value, but value should only be learned via the value_loss function. We modify the policy_loss to use the advantage rather than the direct returns for weighting, as discussed in the previous post. We add the squared error \\((G - v(s))^2\\), summed over all samples in the batch, to the total loss with a weight of VALUE_LOSS_WEIGHT which we typically set to 0.5. This will cause the value head to attempt to learn the return \\(G\\). Minor other changes We also have to update our other utility functions to be able to handle models which output both move logits and a value. In particular, we need to change the function play_multiple_against_model which we use to sample games against an opponent model to be aware of this change. This is very simple though since it has no need for the value function and can simply discard the second output of the model.\nEvaluating REINFORCE with baseline in self-play It’s time to let the residual CNN model with the brand new value head play itself using the self-play loop. Here’s a run down of the hyperparameters and other choices:\nLearning rate is \\(10^{-4}\\); AdamW is used as the optimizer. Value loss weight is \\(\\alpha = 0.5\\). Entropy bonus is \\(\\beta = 0.05\\). The reward discount rate is \\(\\gamma=0.9\\). A batch consists of 50 games; the model is updated via the update described above after each full batch. The model always plays against a recent checkpoint copy of itself. Every 100 batches (5000 games) we evaluate the performance of the current model against the checkpoint; if it achieved a win rate of over 52% in the last 1000 games, it becomes the new checkpoint model. Every 20 batches (1000 games) we evaluate the win rate of the current model against the RandomPunisher using 100 games, purely for tracking our progress. Both this win rate and some other stats are plotted at these intervals. Notably, this time around, we add the value loss, the standard deviation of the returns \\(G\\), and the standard deviation of the advantage \\(G - v(s)\\) to our stats to be plotted. Let’s look at some snapshots of the training progress at various milestones.\nSelf-play training after 350k games.\nInitial training is slow and noisy as the model fumbles to learn the basics of the game and only has itself as an (unreliable) opponent and teacher. We could definitely speed this phase up significantly by using the RandomPunisher as an opponent instead. Entropy also drops precariously low to around 0.2, but eventually works itself out thanks to the entropy bonus. Value and advantage are still very noisy here.\nAfter around 300k games, the model convincingly breaks the previous benchmark of a 50% win rate against the RandomPunisher. Here things get a lot better: entropy stabilizes above 0.7, and the value network really starts learning now.\nSelf-play training after 550k games.\nIn the next phase up to around 550k games, we now see textbook behavior of the value network. The value loss decreases steadily to around 0.28, and the standard deviation of the advantage is already noticeably, if not dramatically, lower (0.52) than the standard deviation of the raw returns (0.57); this is variance reduction in effect.\nThe win rate against the RandomPunisher reference opponent steadily climbs to around 75%. Entropy remains steady in the 1.0–1.2 range.\nSelf-play training after 850k games.\nThe previous trends still continue unabated at the 850k games mark: value loss has further dropped to 0.23, and the advantage stddev is now decisively lower at 0.47 than the returns stddev at 0.55.\nWin rate has now increased to around 86%.\nSelf-play training after 1.6M games.\nRemarkably, the improvements continue even much deeper into the run: after almost 1.6M games, the win rate has climbed further to 94%, occasionally even pushing 98%. Value loss is down to 0.14, and advantage stddev has further dropped to 0.37 versus the returns stddev at 0.50, proving that variance reduction keeps improving as well.\nAfter the initial drop, entropy has remained stable above 1.0 for the entire remainder of the run. Also, the policy loss never seems to do anything particularly interesting, mostly oscillating noisily around the -0.04 to -0.03 range, even as the win rate steadily increases.\nConclusion The model we trained is now a seriously strong player, completely eviscerating the once so intimidating RandomPunisher. It even beats the already quite strong model which served as the interactive opponent in the teaser post for this series around 75% of the time.\nMost importantly, the entire training run was based entirely on self-play, and there was no manual tweaking or annealing of any hyperparameters; instead, it was a “set it and forget it” affair with straightforward parameter choices, unlike the first experiments with basic REINFORCE. This drives home the significantly improved robustness of the algorithm with baseline.\nNevertheless, we do see one of the drawbacks of REINFORCE with baseline: as discussed in the last post, the Monte Carlo estimate for the value network has high variance, and we observe that in the fact that the model needs a lot of samples to learn to predict the returns. Even after 1.6M games, the value estimate seems not to have fully converged yet.\nUp for a game? If you’re feeling lucky, you can try your hand at playing against the model we trained in the applet below:\n",
+  "wordCount" : "1443",
+  "inLanguage": "en",
+  "datePublished": "2025-05-01T23:05:00+02:00",
+  "dateModified": "2025-05-01T23:05:00+02:00",
+  "author":{
+    "@type": "Person",
+    "name": "cfh"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://c-f-h.github.io/post/implementing-rwb/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "cfh::blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://c-f-h.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://c-f-h.github.io/" accesskey="h" title="cfh::blog (Alt + H)">cfh::blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://c-f-h.github.io/categories/" title="categories">
+                    <span>categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://c-f-h.github.io/tags/" title="tags">
+                    <span>tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/post/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Implementing and Evaluating REINFORCE with Baseline
+    </h1>
+    <div class="post-meta"><span title='2025-05-01 23:05:00 +0200 +0200'>May 1, 2025</span>&nbsp;·&nbsp;cfh
+
+</div>
+  </header> 
+  <div class="post-content"><p><a href="/post/reinforce-with-baseline/">Having introduced</a> REINFORCE with baseline on a
+conceptual level, let&rsquo;s implement it for our Connect 4-playing CNN model.</p>
+<h2 id="adding-the-value-head">Adding the value head<a hidden class="anchor" aria-hidden="true" href="#adding-the-value-head">#</a></h2>
+<p>In the constructor of the <a href="/post/model-design/"><code>Connect4CNN</code> model class</a>,
+we set up the new network for estimating the board state value \(v(s)\)
+which will consume the same 448 downsampled features that the policy head receives:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">value_head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span> <span class="o">*</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span></code></pre></div><p>It&rsquo;s very similar in structure to the MLP policy head, with some minor differences:</p>
+<ul>
+<li>We use 64 neurons on the two hidden layers instead of 128 since estimating value is
+presumably an easier task than finding the best next move.</li>
+<li>We omit the layer normalization since it doesn&rsquo;t seem to provide any significant benefits
+for the value head.</li>
+<li>There is only a single output, and we apply a <code>tanh</code> activation function to it which
+gives us exactly the range \([-1,1]\) that we want the value
+\(v(s)\) to have.</li>
+</ul>
+<figure class="align-center ">
+    <img loading="lazy" src="tanh.svg#center"
+         alt="The tanh function" width="400"/> <figcaption>
+            <p>The tanh function</p>
+        </figcaption>
+</figure>
+
+<p>In the <code>forward</code> method of the model class, we apply the value head to the features
+and return both policy and value:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl">        <span class="c1"># ... code as before ...</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># Apply residual CNN blocks</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resblock1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resblock2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resblock3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Downsample columnwise: (B, 64, 1, 7) -&gt; (B, 7 * 64)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span> <span class="o">*</span> <span class="mi">64</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># Fully connected layers (MLP head, outputs logits): (B, 7)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_layers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># Value head: (B, 1) -&gt; (B,)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_head</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">original_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># Remove singleton batch dimension</span>
+</span></span><span class="line"><span class="cl">            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span>
+</span></span></code></pre></div><p>All that has changed here is that we invoke the new value head with the same input that
+also the policy head receives. We then return both policy and value
+as a tuple <code>(p, v)</code>.</p>
+<h2 id="implementing-the-new-update-function">Implementing the new update function<a hidden class="anchor" aria-hidden="true" href="#implementing-the-new-update-function">#</a></h2>
+<p>We previously already modified the <code>update_policy</code> function from the
+<a href="/post/the-reinforce-algorithm/#Implementation">basic REINFORCE algorithm</a>
+by introducing <a href="/post/entropy-regularization/">entropy regularization</a>;
+now we make a few further adjustments as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl">    <span class="c1"># compute model outputs for the batch</span>
+</span></span><span class="line"><span class="cl">    <span class="n">logits</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># mask out illegal moves and compute logprobs of the actually taken actions</span>
+</span></span><span class="line"><span class="cl">    <span class="n">masked_logits</span> <span class="o">=</span> <span class="n">mask_invalid_moves_batch</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">mask_value</span><span class="o">=-</span><span class="mf">1e9</span><span class="p">)</span>  <span class="c1"># (B, 7)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">log_probs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">masked_logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>                <span class="c1"># (B, 7)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">entropy</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">log_probs</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_probs</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>           <span class="c1"># (B,)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># select log probs of actually taken actions: (B, 7) -&gt; (B, 1) -&gt; (B,)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">log_probs_taken</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">log_probs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">index</span><span class="o">=</span><span class="n">actions</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>                     <span class="c1"># (B,)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># calculate RwB loss = -sum(A_t * log p_(a_t)(s_t), t)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">## IMPORTANT! Detach so gradients don&#39;t flow back into the value network</span>
+</span></span><span class="line"><span class="cl">    <span class="n">advantage</span> <span class="o">=</span> <span class="p">(</span><span class="n">returns</span> <span class="o">-</span> <span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">policy_loss</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">advantage</span> <span class="o">*</span> <span class="n">log_probs_taken</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># reinforce with baseline: estimate value from Monte Carlo samples</span>
+</span></span><span class="line"><span class="cl">    <span class="n">value_loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">returns</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">total_loss</span> <span class="o">=</span> <span class="n">policy_loss</span> <span class="o">+</span> <span class="n">VALUE_LOSS_WEIGHT</span> <span class="o">*</span> <span class="n">value_loss</span> \
+</span></span><span class="line"><span class="cl">        <span class="o">-</span> <span class="n">ENTROPY_BONUS</span> <span class="o">*</span> <span class="n">entropy</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># perform gradient update</span>
+</span></span><span class="line"><span class="cl">    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">total_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</span></span></code></pre></div><p>The salient changes here are:</p>
+<ul>
+<li>The model now outputs two tensors:
+<code>logits, value = model(states)</code>. The logits are converted into probabilities as before.</li>
+<li>We compute the observed advantage using <code>(returns - value).detach()</code>. Detaching the
+tensor is an important step!
+It tells PyTorch that we don&rsquo;t want gradients to flow back via this tensor
+into the value network during backpropagation. Rather, we simply want to plug the
+numerical value of the advantage into the policy update function. Otherwise, the policy
+update could modify the value, but value should only be learned via the <code>value_loss</code>
+function.</li>
+<li>We modify the <code>policy_loss</code> to use the advantage rather than the direct returns for
+weighting, as discussed in the previous post.</li>
+<li>We add the squared error \((G - v(s))^2\), summed over all samples in the batch,
+to the total loss with a weight of <code>VALUE_LOSS_WEIGHT</code> which we typically set to 0.5.
+This will cause the value head to attempt to learn the return \(G\).</li>
+</ul>
+<h2 id="minor-other-changes">Minor other changes<a hidden class="anchor" aria-hidden="true" href="#minor-other-changes">#</a></h2>
+<p>We also have to update our other utility functions to be able to handle models which output
+both move logits and a value. In particular, we need to change the function
+<code>play_multiple_against_model</code> which we use to sample games against an opponent model to
+be aware of this change. This is very simple though since it has no need for the value
+function and can simply discard the second output of the model.</p>
+<h2 id="evaluating-reinforce-with-baseline-in-self-play">Evaluating REINFORCE with baseline in self-play<a hidden class="anchor" aria-hidden="true" href="#evaluating-reinforce-with-baseline-in-self-play">#</a></h2>
+<p>It&rsquo;s time to let the residual CNN model with the brand new value head play itself using the
+<a href="/post/policy-collapse/#the-self-play-loop">self-play loop</a>.
+Here&rsquo;s a run down of the hyperparameters and other choices:</p>
+<ul>
+<li>Learning rate is \(10^{-4}\); AdamW is used as the optimizer.</li>
+<li>Value loss weight is \(\alpha = 0.5\).</li>
+<li><a href="/post/entropy-regularization/">Entropy bonus</a> is \(\beta = 0.05\).</li>
+<li>The <a href="/post/the-reinforce-algorithm/#assigning-returns">reward discount rate</a>
+is \(\gamma=0.9\).</li>
+<li>A batch consists of 50 games; the model is updated via the update described above after
+each full batch.</li>
+<li>The model always plays against a recent checkpoint copy of itself.</li>
+<li>Every 100 batches (5000 games) we evaluate the performance of the current model against
+the checkpoint; if it achieved a win rate of over 52% in the last 1000 games,
+it becomes the new checkpoint model.</li>
+<li>Every 20 batches (1000 games) we evaluate the win rate of the current model against
+the <a href="/post/random-punisher/"><code>RandomPunisher</code></a> using 100 games,
+purely for tracking our progress.
+Both this win rate and some other stats are plotted at these intervals.
+Notably, this time around, we add the
+value loss, the standard deviation of the returns \(G\), and the standard deviation
+of the advantage \(G - v(s)\) to our stats to be plotted.</li>
+</ul>
+<p>Let&rsquo;s look at some snapshots of the training progress at various milestones.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="Figure_1.png#center"
+         alt="Self-play training after 350k games." width="100%"/> <figcaption>
+            <p>Self-play training after 350k games.</p>
+        </figcaption>
+</figure>
+
+<p>Initial training is slow and noisy as the model fumbles to learn the basics of the
+game and only has itself as an
+(unreliable) opponent and teacher. We could definitely speed this phase up significantly
+by using the <code>RandomPunisher</code> as an opponent instead.
+Entropy also drops precariously low to around
+0.2, but eventually works itself out thanks to the entropy bonus.
+Value and advantage are still very noisy here.</p>
+<p>After around 300k games, the model convincingly breaks the previous benchmark of a 50%
+win rate against the <code>RandomPunisher</code>. Here things get a lot better: entropy stabilizes
+above 0.7, and the value network really starts learning now.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="Figure_3.png#center"
+         alt="Self-play training after 550k games." width="100%"/> <figcaption>
+            <p>Self-play training after 550k games.</p>
+        </figcaption>
+</figure>
+
+<p>In the next phase up to around 550k games, we now see textbook behavior of the value
+network. The value loss decreases steadily to around 0.28, and the
+standard deviation of the advantage is already noticeably, if not dramatically, lower
+(0.52) than the standard deviation of the raw returns (0.57); this is variance reduction
+in effect.</p>
+<p>The win rate against the <code>RandomPunisher</code> reference opponent steadily climbs to around
+75%. Entropy remains steady in the 1.0&ndash;1.2 range.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="Figure_5.png#center"
+         alt="Self-play training after 850k games." width="100%"/> <figcaption>
+            <p>Self-play training after 850k games.</p>
+        </figcaption>
+</figure>
+
+<p>The previous trends still continue unabated at the 850k games mark:
+value loss has further dropped to 0.23, and the advantage stddev is now decisively
+lower at 0.47 than the returns stddev at 0.55.</p>
+<p>Win rate has now increased to around 86%.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="Figure_6.png#center"
+         alt="Self-play training after 1.6M games." width="100%"/> <figcaption>
+            <p>Self-play training after 1.6M games.</p>
+        </figcaption>
+</figure>
+
+<p>Remarkably, the improvements continue even much deeper into the run: after almost
+1.6M games, the win rate has climbed further to 94%, occasionally even pushing 98%.
+Value loss is down to 0.14, and advantage stddev has further dropped to 0.37 versus
+the returns stddev at 0.50, proving that variance reduction keeps improving as well.</p>
+<p>After the initial drop,
+entropy has remained stable above 1.0 for the entire remainder of the run.
+Also, the policy loss never seems to do anything particularly interesting, mostly
+oscillating noisily around the -0.04 to -0.03 range, even as the win rate steadily
+increases.</p>
+<h2 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h2>
+<p>The model we trained is now a seriously strong player, completely eviscerating the once so
+intimidating <code>RandomPunisher</code>. It even beats the already quite strong model which served
+as the interactive opponent in the <a href="/post/connect-4/">teaser post</a> for this series
+around 75% of the time.</p>
+<p>Most importantly, the entire training run was based entirely on self-play, and there was
+no manual tweaking or annealing of any hyperparameters; instead, it was a &ldquo;set it and
+forget it&rdquo; affair with straightforward parameter choices,
+unlike the first experiments with basic REINFORCE.
+This drives home the significantly improved robustness of the algorithm with baseline.</p>
+<p>Nevertheless, we do see one of the drawbacks of REINFORCE with baseline: as discussed
+in the last post,
+the Monte Carlo estimate for the value network has high variance, and we observe
+that in the fact that the model needs a lot of samples to learn to predict the returns.
+Even after 1.6M games, the value estimate seems not to have fully converged yet.</p>
+<h2 id="up-for-a-game">Up for a game?<a hidden class="anchor" aria-hidden="true" href="#up-for-a-game">#</a></h2>
+<p>If you&rsquo;re feeling lucky, you can try your hand at playing against the model we trained in
+the applet below:</p>
+<div id="game-container1" class="connect4-container"
+    data-human="1" data-cpu="2"
+    data-random-first-player="true"
+    data-onnx-model="model-mk4-rwb.onnx"
+></div>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://c-f-h.github.io/tags/python/">Python</a></li>
+      <li><a href="https://c-f-h.github.io/tags/pytorch/">PyTorch</a></li>
+      <li><a href="https://c-f-h.github.io/tags/ml/">ML</a></li>
+      <li><a href="https://c-f-h.github.io/tags/rl/">RL</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://c-f-h.github.io/post/reinforce-with-baseline/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>REINFORCE with Baseline</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://c-f-h.github.io/">cfh::blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

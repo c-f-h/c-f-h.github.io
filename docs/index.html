@@ -175,6 +175,21 @@ all my own.</p>
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Implementing and Evaluating REINFORCE with Baseline
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Having introduced REINFORCE with baseline on a conceptual level, let’s implement it for our Connect 4-playing CNN model.
+Adding the value head In the constructor of the Connect4CNN model class, we set up the new network for estimating the board state value \(v(s)\) which will consume the same 448 downsampled features that the policy head receives:
+self.value_head = nn.Sequential( nn.Linear(64 * 7, 64), nn.ReLU(), nn.Linear(64, 64), nn.ReLU(), nn.Linear(64, 1), nn.Tanh() ) It’s very similar in structure to the MLP policy head, with some minor differences:
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-01 23:05:00 +0200 +0200'>May 1, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to Implementing and Evaluating REINFORCE with Baseline" href="https://c-f-h.github.io/post/implementing-rwb/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">REINFORCE with Baseline
     </h2>
   </header>
@@ -298,19 +313,6 @@ board = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE) The board is 
   </div>
   <footer class="entry-footer"><span title='2025-04-20 13:12:41 +0200 +0200'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Connect-Zero: Reinforcement Learning from Scratch" href="https://c-f-h.github.io/post/connect-zero/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Connect 4
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p> The computer opponent is a neural network trained using reinforcement learning. It was exported to ONNX and now runs right here in your browser. See Connect-Zero and the follow-up posts for details.
-</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-20 09:29:36 +0200 +0200'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Connect 4" href="https://c-f-h.github.io/post/connect-4/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

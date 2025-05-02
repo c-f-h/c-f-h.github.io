@@ -249,7 +249,7 @@ def board_to_channels(board: torch.Tensor) -> torch.Tensor:
     channels[:, 2, :, :] = (board == 0).float()    # Empty cells
     return channels
 
-class Connect4CNN_Mk4(nn.Module):
+class Connect4CNN(nn.Module):
     """CNN/ResNet model with global average pooling and MLP classifier head."""
     def __init__(self):
         super().__init__()

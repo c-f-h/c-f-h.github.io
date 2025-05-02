@@ -188,4 +188,5 @@ pieces being in a row because it usually loses from there, then finding the savi
 that blocks the opponent's win will yield a high advantage and reward this move strongly.
 
 Hopefully, this should clarify the basic theory behind REINFORCE with baseline.
-In the next post, we'll actually implement and evaluate the algorithm.
+In the [next post]({{< relref implementing-rwb >}}), we'll actually implement and evaluate
+the algorithm.
