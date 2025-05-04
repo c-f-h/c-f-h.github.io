@@ -15,6 +15,8 @@
       <guid>https://c-f-h.github.io/post/implementing-rwb/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://c-f-h.github.io/post/reinforce-with-baseline/&#34;&gt;Having introduced&lt;/a&gt; REINFORCE with baseline on a
 conceptual level, let&amp;rsquo;s implement it for our Connect 4-playing CNN model.&lt;/p&gt;
+&lt;p&gt;Runnable example code for this post is at
+&lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example3-rwb.py&#34;&gt;&lt;code&gt;connect-zero/train/example3-rwb.py&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;adding-the-value-head&#34;&gt;Adding the value head&lt;/h2&gt;
 &lt;p&gt;In the constructor of the &lt;a href=&#34;https://c-f-h.github.io/post/model-design/&#34;&gt;&lt;code&gt;Connect4CNN&lt;/code&gt; model class&lt;/a&gt;,
 we set up the new network for estimating the board state value \(v(s)\)

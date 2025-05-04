@@ -167,6 +167,7 @@
   </header>
   <div class="entry-content">
     <p>Having introduced REINFORCE with baseline on a conceptual level, let’s implement it for our Connect 4-playing CNN model.
+Runnable example code for this post is at connect-zero/train/example3-rwb.py.
 Adding the value head In the constructor of the Connect4CNN model class, we set up the new network for estimating the board state value \(v(s)\) which will consume the same 448 downsampled features that the policy head receives:
 self.value_head = nn.Sequential( nn.Linear(64 * 7, 64), nn.ReLU(), nn.Linear(64, 64), nn.ReLU(), nn.Linear(64, 1), nn.Tanh() ) It’s very similar in structure to the MLP policy head, with some minor differences:
 ...</p>

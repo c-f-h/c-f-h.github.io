@@ -36,5 +36,8 @@ Some ground rules:
 You can actually [play against a version]({{<relref connect-4>}}) of the current model
 right now! It will take a couple of blog posts until we catch up to that level, though.
 
+The code repository for this blog post series is at
+[https://github.com/c-f-h/connect-zero](https://github.com/c-f-h/connect-zero).
+
 In the [next post]({{< relref basic-setup-and-play >}}), we'll specify how our models
 interact with the board and set up a basic gameplay loop.
