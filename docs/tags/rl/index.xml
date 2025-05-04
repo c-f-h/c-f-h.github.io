@@ -15,9 +15,20 @@
       <guid>https://c-f-h.github.io/post/implementing-rwb/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://c-f-h.github.io/post/reinforce-with-baseline/&#34;&gt;Having introduced&lt;/a&gt; REINFORCE with baseline on a
 conceptual level, let&amp;rsquo;s implement it for our Connect 4-playing CNN model.&lt;/p&gt;
-&lt;p&gt;Runnable example code for this post is at
+
+  
+  
+    &lt;blockquote class=&#34;alert alert-important&#34;&gt;
+      &lt;p class=&#34;alert-heading&#34;&gt;
+        ❕
+        
+          &lt;b&gt;Example Code&lt;/b&gt;
+        
+      &lt;/p&gt;
+      &lt;p&gt;Runnable example code for this post:&lt;br&gt;
 &lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example3-rwb.py&#34;&gt;&lt;code&gt;connect-zero/train/example3-rwb.py&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;adding-the-value-head&#34;&gt;Adding the value head&lt;/h2&gt;
+    &lt;/blockquote&gt;
+  &lt;h2 id=&#34;adding-the-value-head&#34;&gt;Adding the value head&lt;/h2&gt;
 &lt;p&gt;In the constructor of the &lt;a href=&#34;https://c-f-h.github.io/post/model-design/&#34;&gt;&lt;code&gt;Connect4CNN&lt;/code&gt; model class&lt;/a&gt;,
 we set up the new network for estimating the board state value \(v(s)\)
 which will consume the same 448 downsampled features that the policy head receives:&lt;/p&gt;
@@ -76,9 +87,20 @@ player into a formidable opponent for our starter models.&lt;/p&gt;</description
       <guid>https://c-f-h.github.io/post/entropy-regularization/</guid>
       <description>&lt;p&gt;Based on our &lt;a href=&#34;https://c-f-h.github.io/post/on-entropy/&#34;&gt;discussion on entropy&lt;/a&gt;, our plan is to implement
 entropy regularization via an entropy bonus in our loss function.&lt;/p&gt;
-&lt;p&gt;Runnable example code for this post is at
+
+  
+  
+    &lt;blockquote class=&#34;alert alert-important&#34;&gt;
+      &lt;p class=&#34;alert-heading&#34;&gt;
+        ❕
+        
+          &lt;b&gt;Example Code&lt;/b&gt;
+        
+      &lt;/p&gt;
+      &lt;p&gt;Runnable example code for this post:&lt;br&gt;
 &lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example2-entropy.py&#34;&gt;&lt;code&gt;connect-zero/train/example2-entropy.py&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;implementing-the-entropy-bonus&#34;&gt;Implementing the entropy bonus&lt;/h2&gt;
+    &lt;/blockquote&gt;
+  &lt;h2 id=&#34;implementing-the-entropy-bonus&#34;&gt;Implementing the entropy bonus&lt;/h2&gt;
 &lt;p&gt;The formula for entropy which we have to implement,&lt;/p&gt;
 \[
     H(p) = -\sum_{i=1}^{C} p_i \log p_i,
@@ -115,9 +137,20 @@ we can finally attempt to start training some models for
 However, as we&amp;rsquo;ll see, there are still some hurdles in our way before we get anywhere.
 It&amp;rsquo;s good to set your expectations accordingly because rarely if ever do things go
 smoothly the first time in RL.&lt;/p&gt;
-&lt;p&gt;Runnable example code for this post is at
+
+  
+  
+    &lt;blockquote class=&#34;alert alert-important&#34;&gt;
+      &lt;p class=&#34;alert-heading&#34;&gt;
+        ❕
+        
+          &lt;b&gt;Example Code&lt;/b&gt;
+        
+      &lt;/p&gt;
+      &lt;p&gt;Runnable example code for this post:&lt;br&gt;
 &lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example1-collapse.py&#34;&gt;&lt;code&gt;connect-zero/train/example1-collapse.py&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;a-simple-mlp-model&#34;&gt;A simple MLP model&lt;/h2&gt;
+    &lt;/blockquote&gt;
+  &lt;h2 id=&#34;a-simple-mlp-model&#34;&gt;A simple MLP model&lt;/h2&gt;
 &lt;p&gt;As a fruitfly of Connect 4-playing models, let&amp;rsquo;s start with a simple multilayer perceptron
 (MLP) model that follows the &lt;a href=&#34;https://c-f-h.github.io/post/basic-setup-and-play/&#34;&gt;model protocol&lt;/a&gt; we
 outlined earlier: that means that it has an input layer taking a 6x7 &lt;code&gt;int8&lt;/code&gt; board state

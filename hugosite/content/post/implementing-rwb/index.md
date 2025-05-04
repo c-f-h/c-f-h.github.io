@@ -11,8 +11,9 @@ onnx: true
 [Having introduced]({{< relref reinforce-with-baseline >}}) REINFORCE with baseline on a
 conceptual level, let's implement it for our Connect 4-playing CNN model.
 
-Runnable example code for this post is at
-[``connect-zero/train/example3-rwb.py``](https://github.com/c-f-h/connect-zero/blob/main/train/example3-rwb.py).
+> [!important] Example Code
+> Runnable example code for this post:  
+> [``connect-zero/train/example3-rwb.py``](https://github.com/c-f-h/connect-zero/blob/main/train/example3-rwb.py).
 
 ## Adding the value head
 

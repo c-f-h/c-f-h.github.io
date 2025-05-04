@@ -14,8 +14,9 @@ However, as we'll see, there are still some hurdles in our way before we get any
 It's good to set your expectations accordingly because rarely if ever do things go
 smoothly the first time in RL.
 
-Runnable example code for this post is at
-[``connect-zero/train/example1-collapse.py``](https://github.com/c-f-h/connect-zero/blob/main/train/example1-collapse.py).
+> [!important] Example Code
+> Runnable example code for this post:  
+> [``connect-zero/train/example1-collapse.py``](https://github.com/c-f-h/connect-zero/blob/main/train/example1-collapse.py).
 
 
 ## A simple MLP model

@@ -55,9 +55,20 @@ we can finally attempt to start training some models for
 However, as we&amp;rsquo;ll see, there are still some hurdles in our way before we get anywhere.
 It&amp;rsquo;s good to set your expectations accordingly because rarely if ever do things go
 smoothly the first time in RL.&lt;/p&gt;
-&lt;p&gt;Runnable example code for this post is at
+
+  
+  
+    &lt;blockquote class=&#34;alert alert-important&#34;&gt;
+      &lt;p class=&#34;alert-heading&#34;&gt;
+        ❕
+        
+          &lt;b&gt;Example Code&lt;/b&gt;
+        
+      &lt;/p&gt;
+      &lt;p&gt;Runnable example code for this post:&lt;br&gt;
 &lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example1-collapse.py&#34;&gt;&lt;code&gt;connect-zero/train/example1-collapse.py&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;a-simple-mlp-model&#34;&gt;A simple MLP model&lt;/h2&gt;
+    &lt;/blockquote&gt;
+  &lt;h2 id=&#34;a-simple-mlp-model&#34;&gt;A simple MLP model&lt;/h2&gt;
 &lt;p&gt;As a fruitfly of Connect 4-playing models, let&amp;rsquo;s start with a simple multilayer perceptron
 (MLP) model that follows the &lt;a href=&#34;https://c-f-h.github.io/post/basic-setup-and-play/&#34;&gt;model protocol&lt;/a&gt; we
 outlined earlier: that means that it has an input layer taking a 6x7 &lt;code&gt;int8&lt;/code&gt; board state
