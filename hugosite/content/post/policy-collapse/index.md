@@ -14,6 +14,10 @@ However, as we'll see, there are still some hurdles in our way before we get any
 It's good to set your expectations accordingly because rarely if ever do things go
 smoothly the first time in RL.
 
+Runnable example code for this post is at
+[``connect-zero/train/example1-collapse.py``](https://github.com/c-f-h/connect-zero/blob/main/train/example1-collapse.py).
+
+
 ## A simple MLP model
 
 As a fruitfly of Connect 4-playing models, let's start with a simple multilayer perceptron
@@ -60,7 +64,8 @@ deal both with a single board input with shape ``(6, 7)`` as well as with a batc
 ``(B, 6, 7)``.
 
 For a strong board-game playing model, we'll want at least a few convolution layers
-later on, but as we'll see shortly, playing strength is not the first thing we have to worry
+[later on]({{< relref model-design >}}),
+but as we'll see shortly, playing strength is not the first thing we have to worry
 about.
 
 ## The self-play loop

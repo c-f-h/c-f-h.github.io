@@ -157,7 +157,7 @@ Adding the value head In the constructor of the Connect4CNN model class, we set 
 self.value_head = nn.Sequential( nn.Linear(64 * 7, 64), nn.ReLU(), nn.Linear(64, 64), nn.ReLU(), nn.Linear(64, 1), nn.Tanh() ) It’s very similar in structure to the MLP policy head, with some minor differences:
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-05-01 23:05:00 +0200 +0200'>May 1, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-05-01 23:05:00 +0200 CEST'>May 1, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Implementing and Evaluating REINFORCE with Baseline" href="https://c-f-h.github.io/post/implementing-rwb/"></a>
 </article>
 
@@ -171,7 +171,7 @@ self.value_head = nn.Sequential( nn.Linear(64 * 7, 64), nn.ReLU(), nn.Linear(64,
 The value network Given a board state \(s\), recall that our model currently outputs seven raw logits which are then transformed via softmax into the probability distribution \(p(s)\) over the seven possible moves. Many advanced algorithms in RL assume that our network also outputs a second piece of information: the value \(v(s)\), a number between -1 and 1 which, roughly speaking, gives an estimate of how confident the model is in winning from the current position.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-29 08:42:00 +0200 +0200'>April 29, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-29 08:42:00 +0200 CEST'>April 29, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to REINFORCE with Baseline" href="https://c-f-h.github.io/post/reinforce-with-baseline/"></a>
 </article>
 
@@ -185,7 +185,7 @@ The value network Given a board state \(s\), recall that our model currently out
 A benchmark opponent The only model with fixed performance we have right now is the RandomPlayer from the basic setup post. Obviously, that’s not a challenging bar to clear. But it turns out that with some small tweaks, we can turn the fully random player into a formidable opponent for our starter models.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-26 09:50:00 +0200 +0200'>April 26, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-26 09:50:00 +0200 CEST'>April 26, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Introducing a Benchmark Opponent" href="https://c-f-h.github.io/post/random-punisher/"></a>
 </article>
 
@@ -196,11 +196,12 @@ A benchmark opponent The only model with fixed performance we have right now is 
   </header>
   <div class="entry-content">
     <p>Based on our discussion on entropy, our plan is to implement entropy regularization via an entropy bonus in our loss function.
+Runnable example code for this post is at connect-zero/train/example2-entropy.py.
 Implementing the entropy bonus The formula for entropy which we have to implement,
 \[H(p) = -\sum_{i=1}^{C} p_i \log p_i,\]is simple enough: multiply the probabilities for the seven possible moves with their log-probabilities, sum and negate. However, there is one numerical problem we have to worry about: masking out an illegal move \(i\) leads to a zero probability \(p_i=0\) and a log-probability \(\log p_i = -\infty\). However, due to the rules of IEEE 754 floating point numbers, multiplying zero with \(\pm\infty\) is undefined and therefore results in NaN (not a number). For the entropy formula, however, the contribution should be 0.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-24 20:15:00 +0200 +0200'>April 24, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-24 20:15:00 +0200 CEST'>April 24, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Entropy Regularization" href="https://c-f-h.github.io/post/entropy-regularization/"></a>
 </article>
 
@@ -214,7 +215,7 @@ Implementing the entropy bonus The formula for entropy which we have to implemen
 What is entropy? Given a probability distribution \(p=(p_1,\ldots,p_C)\) over a number of categories \(i=1,\ldots,C\), such as the distribution over the columns our Connect 4 model outputs for a given board state, entropy measures the “amount of randomness” and is defined as1
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-23 20:57:00 +0200 +0200'>April 23, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-23 20:57:00 +0200 CEST'>April 23, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to On Entropy" href="https://c-f-h.github.io/post/on-entropy/"></a>
 </article>
 
@@ -225,10 +226,11 @@ What is entropy? Given a probability distribution \(p=(p_1,\ldots,p_C)\) over a 
   </header>
   <div class="entry-content">
     <p>With the REINFORCE algorithm under our belt, we can finally attempt to start training some models for Connect 4. However, as we’ll see, there are still some hurdles in our way before we get anywhere. It’s good to set your expectations accordingly because rarely if ever do things go smoothly the first time in RL.
+Runnable example code for this post is at connect-zero/train/example1-collapse.py.
 A simple MLP model As a fruitfly of Connect 4-playing models, let’s start with a simple multilayer perceptron (MLP) model that follows the model protocol we outlined earlier: that means that it has an input layer taking a 6x7 int8 board state tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation function each, and an output layer of 7 neurons without any activation function—that’s exactly what we meant earlier when we said that the model should output raw logits.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-21 17:45:00 +0200 +0200'>April 21, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-21 17:45:00 +0200 CEST'>April 21, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to A First Training Run and Policy Collapse" href="https://c-f-h.github.io/post/policy-collapse/"></a>
 </article>
 
@@ -242,7 +244,7 @@ A simple MLP model As a fruitfly of Connect 4-playing models, let’s start with
 As it goes in life, our model wins some and loses some. How do we make it actually learn from its experiences? How does the magic happen?
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-20 20:29:21 +0200 +0200'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-20 20:29:21 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to The REINFORCE Algorithm" href="https://c-f-h.github.io/post/the-reinforce-algorithm/"></a>
 </article>
 
@@ -255,7 +257,7 @@ As it goes in life, our model wins some and loses some. How do we make it actual
     <p>For a long time I’ve wanted to get deeper into reinforcement learning (RL), and the project I finally settled on is teaching a neural network model how to play the classic game Connect 4 (pretty sneaky, sis!). Obviously, the name “Connect-Zero” is a cheeky nod to AlphaGo Zero and AlphaZero by DeepMind. I chose Connect 4 because it’s a simple game everyone knows how to play where we can hope to achieve good results without expensive hardware and high training costs.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-04-20 13:12:41 +0200 +0200'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <footer class="entry-footer"><span title='2025-04-20 13:12:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Connect-Zero: Reinforcement Learning from Scratch" href="https://c-f-h.github.io/post/connect-zero/"></a>
 </article>
     </main>

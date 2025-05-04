@@ -10,6 +10,9 @@ connect4: true
 Based on our [discussion on entropy]({{< relref on-entropy >}}), our plan is to implement
 entropy regularization via an entropy bonus in our loss function.
 
+Runnable example code for this post is at
+[``connect-zero/train/example2-entropy.py``](https://github.com/c-f-h/connect-zero/blob/main/train/example2-entropy.py).
+
 ## Implementing the entropy bonus
 
 The formula for entropy which we have to implement,
