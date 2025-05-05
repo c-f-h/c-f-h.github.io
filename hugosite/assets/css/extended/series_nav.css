@@ -1,0 +1,73 @@
+:root {
+    --highlight: #d35400;
+}
+
+.series-info {
+    font-size: 16px;
+    margin: 8px 0;
+    padding: 8px;
+    background-color: var(--code-bg);
+    border-left: 10px solid var(--highlight);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.series-name {
+    font-weight: 500;
+}
+
+.series-name a {
+    color: var(--highlight);
+    text-decoration: none;
+}
+
+.series-name a:hover {
+    text-decoration: underline;
+}
+
+/* Pill Tabs Navigation Style */
+.series-navigation {
+    display: flex;
+    font-size: 14px;
+    background-color: var(--tertiary);
+    border-radius: 50px;
+    padding: 4px;
+}
+
+.series-navigation a {
+    color: var(--secondary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    transition: all 0.2s;
+}
+
+.series-navigation a:hover {
+    background-color: color-mix(in srgb, var(--highlight) 10%, transparent);
+    color: var(--highlight);
+}
+
+.series-navigation .arrow {
+    font-size: 18px;
+    line-height: 1;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .series-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .series-navigation {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

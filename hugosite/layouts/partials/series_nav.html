@@ -1,0 +1,56 @@
+{{ $currentPage := . }}
+
+{{/* Check if the post has categories defined in front matter */}}
+{{ if .Params.categories }}
+  {{/* Get the first category from the list */}}
+  {{ $series := index .Params.categories 0 }}
+  {{ $seriesLink := printf "/categories/%s" (urlize $series) }}
+
+  {{ $pagesInCategory := where site.RegularPages "Params.categories" "intersect" (slice $series) }}
+  {{ $sortedPages := $pagesInCategory.ByDate }}
+
+  {{/* Find the position of the current page within the sorted list */}}
+  {{ $currentIndex := -1 }}
+  {{ $pageCount := len $sortedPages }}
+  {{ $prevPost := "" }}
+  {{ $nextPost := "" }}
+
+  {{ range $index, $page := $sortedPages }}
+    {{ if eq $page.Permalink $currentPage.Permalink }}
+      {{ $currentIndex = $index }}
+
+      {{ if gt $index 0 }}
+        {{ $prevPost = index $sortedPages (sub $index 1) }}
+      {{ end }}
+
+      {{ if lt $index (sub $pageCount 1) }}
+        {{ $nextPost = index $sortedPages (add $index 1) }}
+      {{ end }}
+
+      {{ break }}
+    {{ end }}
+  {{ end }}
+
+  {{/* Render the navigation if the current page was found in the category list */}}
+  {{ if ge $currentIndex 0 }}
+    <div class="series-info">
+      <div class="series-name">
+        Series: <a href="{{ $seriesLink }}">{{ $series }}</a>
+        (Part {{ add $currentIndex 1 }} of {{ $pageCount }})
+      </div>
+      <nav class="series-navigation">
+        {{ with $prevPost }}
+          <a href="{{ .RelPermalink }}" title="Previous: {{ .Title }}">
+            <span class="arrow">←</span> Previous
+          </a>
+        {{ end }}
+        {{ with $nextPost }}
+          <a href="{{ .RelPermalink }}" title="Next: {{ .Title }}">
+            Next <span class="arrow">→</span>
+          </a>
+        {{ end }}
+      </nav>
+    </div>
+  {{ end }}
+
+{{ end }}
