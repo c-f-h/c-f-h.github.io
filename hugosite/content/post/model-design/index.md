@@ -145,7 +145,7 @@ the same distribution during play and training, and I observed significantly mor
 behavior when using BatchNorm.
 
 Instead, we use other popular options: for the conv layers, we use **group normalization**
-with a group size of 16, and for the fully connected layers **layer normalization**,
+with 16 groups, and for the fully connected layers **layer normalization**,
 which normalizes the activations of each sample with respect to itself only, without
 keeping any running stats. As is usual, we remove the bias term on conv and linear layers
 before normalization layers because those come with their own bias.
@@ -325,8 +325,9 @@ only if it achieves a positive win rate over it, say, 52%.
 With careful manual annealing of the learning rate (from 1e-3 through 1e-4 to 1e-5) and of
 the entropy bonus (from 0.05 to 0.03), we can push the win rate against the
 ``RandomPunisher``
-to just above 50%. That's a significant improvement over the MLP model as mentioned at the
-beginning of this post (35%), but in the end we want to do more than break even
+just above 50%. That's a significant improvement over the MLP model as mentioned
+[in the previous post]({{< relref random-punisher >}}) (35%),
+but in the end we want to do more than break even
 against a model that behaves just one or two steps removed from random.
 
 The issue is that the basic REINFORCE algorithm is well known to be quite noisy, and this
