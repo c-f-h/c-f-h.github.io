@@ -1,0 +1,28 @@
+.example-code {
+    margin: 8px 0;
+    padding: 12px;
+    color: var(--primary);
+    background-color: var(--code-bg);
+    border-left: 10px solid #28a451;
+    border-radius: 6px;
+}
+
+.example-code .header {
+    font-weight: bolder;
+    margin-bottom: 4px;
+    color: #28a451;
+}
+
+.example-code svg {
+    height: 24px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.example-code span {
+    vertical-align: middle;
+}
+
+.example-code a {
+    font-family: monospace;
+}
+

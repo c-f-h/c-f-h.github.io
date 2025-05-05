@@ -1,0 +1,8 @@
+<div class="example-code">
+  <div class="header">
+    {{ readFile "/assets/icons/python-icon.svg" | safeHTML }}
+    <span>Runnable Example</span></div>
+  <a href="https://github.com/c-f-h/{{ .Get 0 }}/blob/main/{{ .Get 1 }}" target="_blank">
+    {{.Get 0}}/{{.Get 1}}
+  </a>
+</div>

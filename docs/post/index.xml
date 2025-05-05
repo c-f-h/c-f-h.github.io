@@ -15,32 +15,20 @@
       <guid>https://c-f-h.github.io/post/implementing-rwb/</guid>
       <description>&lt;p&gt;&lt;a href=&#34;https://c-f-h.github.io/post/reinforce-with-baseline/&#34;&gt;Having introduced&lt;/a&gt; REINFORCE with baseline on a
 conceptual level, let&amp;rsquo;s implement it for our Connect 4-playing CNN model.&lt;/p&gt;
-
-  
-  
-    &lt;blockquote class=&#34;alert alert-important&#34;&gt;
-      &lt;p class=&#34;alert-heading&#34;&gt;
-        ❕
-        
-          &lt;b&gt;Example Code&lt;/b&gt;
-        
-      &lt;/p&gt;
-      &lt;p&gt;Runnable example code for this post:&lt;br&gt;
-&lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example3-rwb.py&#34;&gt;&lt;code&gt;connect-zero/train/example3-rwb.py&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;h2 id=&#34;adding-the-value-head&#34;&gt;Adding the value head&lt;/h2&gt;
+&lt;div class=&#34;example-code&#34;&gt;
+  &lt;div class=&#34;header&#34;&gt;
+    &lt;svg viewBox=&#34;0 0 16 16&#34; fill=&#34;none&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;
+  &lt;path d=&#34;M5.79 1.574h3.866c.14 0 .252.11.252.246v5.186a.25.25 0 01-.252.246H6.344c-.975 0-1.766.77-1.766 1.72v1.162a.25.25 0 01-.253.243H1.867a.25.25 0 01-.253-.246V6.177a.25.25 0 01.252-.246H7.98c.418 0 .757-.33.757-.737a.747.747 0 00-.757-.738H5.537V1.82a.25.25 0 01.253-.246zm5.632 2.592V1.82c0-.95-.79-1.72-1.766-1.72H5.79c-.976 0-1.767.77-1.767 1.72v2.636H1.867C.89 4.456.1 5.226.1 6.176v3.955c0 .95.79 1.72 1.766 1.72h2.46c.085 0 .17-.006.252-.017v2.346c0 .95.79 1.72 1.766 1.72h3.866c.976 0 1.767-.77 1.767-1.72v-2.636h2.156c.976 0 1.767-.77 1.767-1.72V5.868c0-.95-.79-1.72-1.767-1.72h-2.458c-.086 0-.17.005-.253.017zm-5.33 5.974V8.994a.25.25 0 01.252-.246h3.312c.976 0 1.766-.77 1.766-1.72V5.866a.25.25 0 01.253-.243h2.458c.14 0 .253.11.253.246v3.954a.25.25 0 01-.252.246H8.02a.747.747 0 00-.757.737c0 .408.339.738.757.738h2.442v2.636a.25.25 0 01-.253.246H6.344a.25.25 0 01-.252-.246v-4.04z&#34; fill=&#34;currentColor&#34;/&gt;
+&lt;/svg&gt;
+    &lt;span&gt;Runnable Example&lt;/span&gt;&lt;/div&gt;
+  &lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example3-rwb.py&#34; target=&#34;_blank&#34;&gt;
+    connect-zero/train/example3-rwb.py
+  &lt;/a&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;adding-the-value-head&#34;&gt;Adding the value head&lt;/h2&gt;
 &lt;p&gt;In the constructor of the &lt;a href=&#34;https://c-f-h.github.io/post/model-design/&#34;&gt;&lt;code&gt;Connect4CNN&lt;/code&gt; model class&lt;/a&gt;,
 we set up the new network for estimating the board state value \(v(s)\)
-which will consume the same 448 downsampled features that the policy head receives:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-py&#34; data-lang=&#34;py&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;bp&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;value_head&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;nn&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Sequential&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;nn&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Linear&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;7&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;nn&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ReLU&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;nn&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Linear&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;nn&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ReLU&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(),&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;nn&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Linear&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;64&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;nn&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Tanh&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It&amp;rsquo;s very similar in structure to the MLP policy head, with some minor differences:&lt;/p&gt;</description>
+which will consume the same 448 downsampled features that the policy head receives:&lt;/p&gt;</description>
     </item>
     <item>
       <title>REINFORCE with Baseline</title>
@@ -104,30 +92,18 @@ player into a formidable opponent for our starter models.&lt;/p&gt;</description
       <guid>https://c-f-h.github.io/post/entropy-regularization/</guid>
       <description>&lt;p&gt;Based on our &lt;a href=&#34;https://c-f-h.github.io/post/on-entropy/&#34;&gt;discussion on entropy&lt;/a&gt;, our plan is to implement
 entropy regularization via an entropy bonus in our loss function.&lt;/p&gt;
-
-  
-  
-    &lt;blockquote class=&#34;alert alert-important&#34;&gt;
-      &lt;p class=&#34;alert-heading&#34;&gt;
-        ❕
-        
-          &lt;b&gt;Example Code&lt;/b&gt;
-        
-      &lt;/p&gt;
-      &lt;p&gt;Runnable example code for this post:&lt;br&gt;
-&lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example2-entropy.py&#34;&gt;&lt;code&gt;connect-zero/train/example2-entropy.py&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;h2 id=&#34;implementing-the-entropy-bonus&#34;&gt;Implementing the entropy bonus&lt;/h2&gt;
-&lt;p&gt;The formula for entropy which we have to implement,&lt;/p&gt;
-\[
-    H(p) = -\sum_{i=1}^{C} p_i \log p_i,
-\]&lt;p&gt;is simple enough: multiply the probabilities for the seven possible moves with their
-log-probabilities, sum and negate. However, there is one numerical problem we
-have to worry about: masking out an illegal move \(i\) leads to a zero probability
-\(p_i=0\) and a log-probability \(\log p_i = -\infty\). However, due to the rules of
-IEEE 754 floating point numbers, multiplying zero with \(\pm\infty\) is undefined and
-therefore results in NaN (not a number). For the entropy formula, however, the
-contribution should be 0.&lt;/p&gt;</description>
+&lt;div class=&#34;example-code&#34;&gt;
+  &lt;div class=&#34;header&#34;&gt;
+    &lt;svg viewBox=&#34;0 0 16 16&#34; fill=&#34;none&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;
+  &lt;path d=&#34;M5.79 1.574h3.866c.14 0 .252.11.252.246v5.186a.25.25 0 01-.252.246H6.344c-.975 0-1.766.77-1.766 1.72v1.162a.25.25 0 01-.253.243H1.867a.25.25 0 01-.253-.246V6.177a.25.25 0 01.252-.246H7.98c.418 0 .757-.33.757-.737a.747.747 0 00-.757-.738H5.537V1.82a.25.25 0 01.253-.246zm5.632 2.592V1.82c0-.95-.79-1.72-1.766-1.72H5.79c-.976 0-1.767.77-1.767 1.72v2.636H1.867C.89 4.456.1 5.226.1 6.176v3.955c0 .95.79 1.72 1.766 1.72h2.46c.085 0 .17-.006.252-.017v2.346c0 .95.79 1.72 1.766 1.72h3.866c.976 0 1.767-.77 1.767-1.72v-2.636h2.156c.976 0 1.767-.77 1.767-1.72V5.868c0-.95-.79-1.72-1.767-1.72h-2.458c-.086 0-.17.005-.253.017zm-5.33 5.974V8.994a.25.25 0 01.252-.246h3.312c.976 0 1.766-.77 1.766-1.72V5.866a.25.25 0 01.253-.243h2.458c.14 0 .253.11.253.246v3.954a.25.25 0 01-.252.246H8.02a.747.747 0 00-.757.737c0 .408.339.738.757.738h2.442v2.636a.25.25 0 01-.253.246H6.344a.25.25 0 01-.252-.246v-4.04z&#34; fill=&#34;currentColor&#34;/&gt;
+&lt;/svg&gt;
+    &lt;span&gt;Runnable Example&lt;/span&gt;&lt;/div&gt;
+  &lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example2-entropy.py&#34; target=&#34;_blank&#34;&gt;
+    connect-zero/train/example2-entropy.py
+  &lt;/a&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;implementing-the-entropy-bonus&#34;&gt;Implementing the entropy bonus&lt;/h2&gt;
+&lt;p&gt;The formula for entropy which we have to implement,&lt;/p&gt;</description>
     </item>
     <item>
       <title>On Entropy</title>
@@ -154,20 +130,17 @@ we can finally attempt to start training some models for
 However, as we&amp;rsquo;ll see, there are still some hurdles in our way before we get anywhere.
 It&amp;rsquo;s good to set your expectations accordingly because rarely if ever do things go
 smoothly the first time in RL.&lt;/p&gt;
-
-  
-  
-    &lt;blockquote class=&#34;alert alert-important&#34;&gt;
-      &lt;p class=&#34;alert-heading&#34;&gt;
-        ❕
-        
-          &lt;b&gt;Example Code&lt;/b&gt;
-        
-      &lt;/p&gt;
-      &lt;p&gt;Runnable example code for this post:&lt;br&gt;
-&lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example1-collapse.py&#34;&gt;&lt;code&gt;connect-zero/train/example1-collapse.py&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;h2 id=&#34;a-simple-mlp-model&#34;&gt;A simple MLP model&lt;/h2&gt;
+&lt;div class=&#34;example-code&#34;&gt;
+  &lt;div class=&#34;header&#34;&gt;
+    &lt;svg viewBox=&#34;0 0 16 16&#34; fill=&#34;none&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;
+  &lt;path d=&#34;M5.79 1.574h3.866c.14 0 .252.11.252.246v5.186a.25.25 0 01-.252.246H6.344c-.975 0-1.766.77-1.766 1.72v1.162a.25.25 0 01-.253.243H1.867a.25.25 0 01-.253-.246V6.177a.25.25 0 01.252-.246H7.98c.418 0 .757-.33.757-.737a.747.747 0 00-.757-.738H5.537V1.82a.25.25 0 01.253-.246zm5.632 2.592V1.82c0-.95-.79-1.72-1.766-1.72H5.79c-.976 0-1.767.77-1.767 1.72v2.636H1.867C.89 4.456.1 5.226.1 6.176v3.955c0 .95.79 1.72 1.766 1.72h2.46c.085 0 .17-.006.252-.017v2.346c0 .95.79 1.72 1.766 1.72h3.866c.976 0 1.767-.77 1.767-1.72v-2.636h2.156c.976 0 1.767-.77 1.767-1.72V5.868c0-.95-.79-1.72-1.767-1.72h-2.458c-.086 0-.17.005-.253.017zm-5.33 5.974V8.994a.25.25 0 01.252-.246h3.312c.976 0 1.766-.77 1.766-1.72V5.866a.25.25 0 01.253-.243h2.458c.14 0 .253.11.253.246v3.954a.25.25 0 01-.252.246H8.02a.747.747 0 00-.757.737c0 .408.339.738.757.738h2.442v2.636a.25.25 0 01-.253.246H6.344a.25.25 0 01-.252-.246v-4.04z&#34; fill=&#34;currentColor&#34;/&gt;
+&lt;/svg&gt;
+    &lt;span&gt;Runnable Example&lt;/span&gt;&lt;/div&gt;
+  &lt;a href=&#34;https://github.com/c-f-h/connect-zero/blob/main/train/example1-collapse.py&#34; target=&#34;_blank&#34;&gt;
+    connect-zero/train/example1-collapse.py
+  &lt;/a&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;a-simple-mlp-model&#34;&gt;A simple MLP model&lt;/h2&gt;
 &lt;p&gt;As a fruitfly of Connect 4-playing models, let&amp;rsquo;s start with a simple multilayer perceptron
 (MLP) model that follows the &lt;a href=&#34;https://c-f-h.github.io/post/basic-setup-and-play/&#34;&gt;model protocol&lt;/a&gt; we
 outlined earlier: that means that it has an input layer taking a 6x7 &lt;code&gt;int8&lt;/code&gt; board state

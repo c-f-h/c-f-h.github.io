@@ -10,7 +10,7 @@
 <meta name="description" content="Posts - cfh::blog">
 <meta name="author" content="cfh">
 <link rel="canonical" href="https://c-f-h.github.io/post/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.48368b920dcb61f046ba0ba3d41ca328a343973d6818b78739605e8749d21f3e.css" integrity="sha256-SDaLkg3LYfBGuguj1ByjKKNDlz1oGLeHOWBeh0nSHz4=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fa803e8fb02d90ecc5e7a4c478ab890389c53e4122edc9741b7a5f21d85cea3c.css" integrity="sha256-&#43;oA&#43;j7AtkOzF56TEeKuJA4nFPkEi7cl0G3pfIdhc6jw=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
@@ -167,10 +167,7 @@
   </header>
   <div class="entry-content">
     <p>Having introduced REINFORCE with baseline on a conceptual level, let’s implement it for our Connect 4-playing CNN model.
-❕ Example Code Runnable example code for this post:
-connect-zero/train/example3-rwb.py.
-Adding the value head In the constructor of the Connect4CNN model class, we set up the new network for estimating the board state value \(v(s)\) which will consume the same 448 downsampled features that the policy head receives:
-self.value_head = nn.Sequential( nn.Linear(64 * 7, 64), nn.ReLU(), nn.Linear(64, 64), nn.ReLU(), nn.Linear(64, 1), nn.Tanh() ) It’s very similar in structure to the MLP policy head, with some minor differences:
+Runnable Example connect-zero/train/example3-rwb.py Adding the value head In the constructor of the Connect4CNN model class, we set up the new network for estimating the board state value \(v(s)\) which will consume the same 448 downsampled features that the policy head receives:
 ...</p>
   </div>
   <footer class="entry-footer"><span title='2025-05-01 23:05:00 +0200 CEST'>May 1, 2025</span>&nbsp;·&nbsp;cfh</footer>
@@ -226,10 +223,7 @@ A benchmark opponent The only model with fixed performance we have right now is 
   </header>
   <div class="entry-content">
     <p>Based on our discussion on entropy, our plan is to implement entropy regularization via an entropy bonus in our loss function.
-❕ Example Code Runnable example code for this post:
-connect-zero/train/example2-entropy.py.
-Implementing the entropy bonus The formula for entropy which we have to implement,
-\[H(p) = -\sum_{i=1}^{C} p_i \log p_i,\]is simple enough: multiply the probabilities for the seven possible moves with their log-probabilities, sum and negate. However, there is one numerical problem we have to worry about: masking out an illegal move \(i\) leads to a zero probability \(p_i=0\) and a log-probability \(\log p_i = -\infty\). However, due to the rules of IEEE 754 floating point numbers, multiplying zero with \(\pm\infty\) is undefined and therefore results in NaN (not a number). For the entropy formula, however, the contribution should be 0.
+Runnable Example connect-zero/train/example2-entropy.py Implementing the entropy bonus The formula for entropy which we have to implement,
 ...</p>
   </div>
   <footer class="entry-footer"><span title='2025-04-24 20:15:00 +0200 CEST'>April 24, 2025</span>&nbsp;·&nbsp;cfh</footer>
@@ -257,9 +251,7 @@ What is entropy? Given a probability distribution \(p=(p_1,\ldots,p_C)\) over a 
   </header>
   <div class="entry-content">
     <p>With the REINFORCE algorithm under our belt, we can finally attempt to start training some models for Connect 4. However, as we’ll see, there are still some hurdles in our way before we get anywhere. It’s good to set your expectations accordingly because rarely if ever do things go smoothly the first time in RL.
-❕ Example Code Runnable example code for this post:
-connect-zero/train/example1-collapse.py.
-A simple MLP model As a fruitfly of Connect 4-playing models, let’s start with a simple multilayer perceptron (MLP) model that follows the model protocol we outlined earlier: that means that it has an input layer taking a 6x7 int8 board state tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation function each, and an output layer of 7 neurons without any activation function—that’s exactly what we meant earlier when we said that the model should output raw logits.
+Runnable Example connect-zero/train/example1-collapse.py A simple MLP model As a fruitfly of Connect 4-playing models, let’s start with a simple multilayer perceptron (MLP) model that follows the model protocol we outlined earlier: that means that it has an input layer taking a 6x7 int8 board state tensor, a few simple hidden layers consisting of just a linear layer and a ReLU activation function each, and an output layer of 7 neurons without any activation function—that’s exactly what we meant earlier when we said that the model should output raw logits.
 ...</p>
   </div>
   <footer class="entry-footer"><span title='2025-04-21 17:45:00 +0200 CEST'>April 21, 2025</span>&nbsp;·&nbsp;cfh</footer>
