@@ -85,7 +85,7 @@ the TD mechanism.
 
 There is one edge case we have to treat specially, namely if \(s'\) is a terminal state because
 the game ended in a win or draw. Our value head never sees such states during training, but
-we can simply fix the value of such states as \(v(s') = 0\) because no further rewards are
+we can simply fix their values as \(v(s') = 0\) because no further rewards are
 possible in a terminal state.
 
 ## Bias and variance
