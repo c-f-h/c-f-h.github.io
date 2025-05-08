@@ -10,7 +10,7 @@
 <meta name="description" content="Notes on personal projects">
 <meta name="author" content="cfh">
 <link rel="canonical" href="https://c-f-h.github.io/categories/the-triangle-project/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.fa803e8fb02d90ecc5e7a4c478ab890389c53e4122edc9741b7a5f21d85cea3c.css" integrity="sha256-&#43;oA&#43;j7AtkOzF56TEeKuJA4nFPkEi7cl0G3pfIdhc6jw=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.eb4f5ef1642754ddbc9d4a04f993a593b712d15d7b60b7a6a6dcc86954ff7b35.css" integrity="sha256-609e8WQnVN28nUoE&#43;ZOlk7cS0V17YLemptzIaVT/ezU=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://c-f-h.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://c-f-h.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://c-f-h.github.io/favicon-32x32.png">
@@ -138,83 +138,38 @@
         </ul>
     </nav>
 </header>
-<main class="main"> 
+<main class="main">
 <header class="page-header"><div class="breadcrumbs"><a href="https://c-f-h.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://c-f-h.github.io/categories/">Categories</a></div>
   <h1>
     The Triangle Project
   </h1>
 </header>
 
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Training the First Model
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Now that we have plenty of training data, we can load it into PyTorch and start training a model.
-Loading the data Since the binary file format we chose was so simple, it’s rather straightforward to write a Dataset class which reads it in:
-import numpy as np import torch from torch.utils.data import Dataset, DataLoader, Subset class BinaryBezierDataset(Dataset): &#34;&#34;&#34; Loads Bezier triangle data from a binary file into memory once. Each record: 11 float32 coords, 32 uint8 bytes (packed 16x16 bitmap). &#34;&#34;&#34; def __init__(self, filename, device, input_dim=11): super().__init__() self.filename = filename self.input_dim = input_dim coords_bytes = input_dim * np.dtype(np.float32).itemsize # 44 record_bytes = coords_bytes &#43; 32 # 76 (coords &#43; 16x16 bitmap = 256 bits) # Calculate number of samples from file size file_size = os.path.getsize(filename) if file_size % record_bytes != 0: raise ValueError(f&#34;File size {file_size} not multiple of record size {record_bytes}&#34;) self.num_samples = file_size // record_bytes print(f&#34;Found {self.num_samples} samples in {filename}.&#34;) with open(filename, &#39;rb&#39;) as f: data = np.fromfile(f, dtype=np.uint8, count=file_size) data = data.reshape(self.num_samples, record_bytes) # reshape into records # Extract coords (first 44 bytes = 11 floats) coords = data[:, :coords_bytes].view(np.float32).reshape(self.num_samples, self.input_dim) # Extract and unpack packed bitmaps (last 32 bytes) packed_bitmaps = data[:, coords_bytes:] unpacked_bits = np.unpackbits(packed_bitmaps, axis=1) # (num_samples, 256) # The actual label is the maximum (0 or 1) over the bitmap bits outputs = np.max(unpacked_bits, axis=1) # (num_samples,) # Convert to pytorch tensors and transfer to GPU if required self.x_tensor = torch.from_numpy(coords).float().to(device) # (num_samples, 11) self.y_tensor = torch.from_numpy(outputs).float().to(device) # (num_samples,) def __len__(self): return self.num_samples def __getitem__(self, idx): return self.x_tensor[idx], self.y_tensor[idx] So far, so good. We are in the convenient position that our entire dataset fits quite comfortably into RAM or VRAM, so we just load the entire dataset at once, extract the 11 triangle coordinates, unpack the bitmap and take its maximum to get a binary 0/1 label which tells us whether the triangle self-intersects. This is a pretty straightforward DataSet which we can load into a nn.DataLoader with the desired batch size and shuffling enabled to feed a standard PyTorch training loop. It’s actually not very efficient to use it like this, but we’ll get to that in a later post.
-...</p>
+<div class="timeline-card" id="timeline-card">
+    <div class="timeline">
+      <div class="item">
+          <div class="item-title">
+            1.&nbsp;<a href="/post/the-triangle-problem/">The Curved Triangle Problem</a></div>
+          <div class="item-date">April 6, 2025</div>
+        </div><div class="item">
+          <div class="item-title">
+            2.&nbsp;<a href="/post/computing-intersections/">Computing Self-Intersections, the Geometric Way</a></div>
+          <div class="item-date">April 7, 2025</div>
+        </div><div class="item">
+          <div class="item-title">
+            3.&nbsp;<a href="/post/refining-intersections/">Getting Accurate Intersections with Gauss-Newton</a></div>
+          <div class="item-date">April 8, 2025</div>
+        </div><div class="item">
+          <div class="item-title">
+            4.&nbsp;<a href="/post/preparing-the-data/">Preparing the Data</a></div>
+          <div class="item-date">April 9, 2025</div>
+        </div><div class="item">
+          <div class="item-title">
+            5.&nbsp;<a href="/post/training-the-first-model/">Training the First Model</a></div>
+          <div class="item-date">April 10, 2025</div>
+        </div>
+    </div>
   </div>
-  <footer class="entry-footer"><span title='2025-04-10 20:29:11 +0200 CEST'>April 10, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Training the First Model" href="https://c-f-h.github.io/post/training-the-first-model/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Preparing the Data
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>With the triangle self-intersection algorithm ready to go, we can start gathering the training data for our machine learning setup. But first we have to think about how exactly we want to represent it.
-Canonical triangles The curved triangles we work with are specified by six 3D vectors, so that would mean 18 floating point numbers as our input data. But an important insight is that whether a triangle intersects itself doesn’t change when we rotate it, translate it, or uniformly scale it—it’s well known that affine transformations of spline control points result in affine transformations of the surface itself.
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-09 20:57:38 +0200 CEST'>April 9, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Preparing the Data" href="https://c-f-h.github.io/post/preparing-the-data/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Getting Accurate Intersections with Gauss-Newton
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>In the last post, we found pairs of subtriangles of our curved triangle which intersect. The subtriangles were linear approximations, which means that the intersection points we found are also only approximate. This might be good enough for our purposes, but in the interest of getting training data that’s as accurate as possible, we will refine these intersections by projecting them onto the exact curved triangle.
-To be precise, we are looking for two distinct parameter pairs \((u_1, v_1)\) and \((u_2, v_2)\) within the triangle’s domain such that their mappings coincide,
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-08 08:33:00 +0200 CEST'>April 8, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Getting Accurate Intersections with Gauss-Newton" href="https://c-f-h.github.io/post/refining-intersections/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Computing Self-Intersections, the Geometric Way
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Before we can apply ML to the triangle problem, we need to be able to compute self-intersections of a curved triangle in an accurate and efficient way so that we can generate enough training data.
-The basic approach is:
-Subdivide the curved triangle into smaller subtriangles Find potentially intersecting pairs of subtriangles Check for actual intersections among these candidate pairs Subdividing the triangle We split the original triangle into a list of sufficiently flat subtriangles by a simple recursive procedure, starting with the full triangle {(0,0), (1,0), (0,1)}:
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-07 17:52:07 +0200 CEST'>April 7, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Computing Self-Intersections, the Geometric Way" href="https://c-f-h.github.io/post/computing-intersections/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">The Curved Triangle Problem
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>As the starting point for a little machine learning project, I chose the following geometric problem. We are given a curved triangle in 3D space. It’s specified via its three vertices plus three additional vector-valued coefficients associated to its three edges. These coefficients are interpreted as control points of a quadratic triangular Bezier surface. Such representations are commonly used in CAD systems to represent curved surfaces. Mathematically speaking, we map parameters \((u,v)\) which lie in the parameter-space triangle \( 0 \le u, v;\ u&#43;v \le 1\) to
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-06 21:06:14 +0200 CEST'>April 6, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to The Curved Triangle Problem" href="https://c-f-h.github.io/post/the-triangle-problem/"></a>
-</article>
     </main>
     
 <footer class="footer">

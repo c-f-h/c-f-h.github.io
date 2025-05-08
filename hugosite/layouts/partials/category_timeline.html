@@ -1,0 +1,39 @@
+{{/*
+  Expects a dictionary/map as context (.) with:
+  - .category: The name of the category to display (string)
+  - .currentPage: The context of the current page (the full Page object)
+  - .collapse: Whether to collapse the timeline by default (bool)
+*/ -}}
+
+{{ $categoryName := .category -}}
+{{ $currentPage := .currentPage -}}
+
+{{/* Find all regular pages that belong to this category */ -}}
+{{ $pagesInCategory := where site.RegularPages "Params.categories" "intersect" (slice $categoryName) -}}
+{{ $sortedPages := $pagesInCategory.ByDate -}}
+
+{{ if $sortedPages -}}
+  <div class="timeline-card{{ if .collapse }} collapsed{{ end }}" id="timeline-card">
+    <div class="timeline">
+      {{ $currentFound := false -}}
+      {{ range $index, $post := $sortedPages -}}
+        {{ $isCurrent := eq $post.Permalink $currentPage.Permalink -}}
+        {{ if $isCurrent }}{{ $currentFound = true }}{{ end -}}
+        <div class="item{{ if $isCurrent }} current{{ else if $currentFound }} inactive{{ end }}">
+          <div class="item-title">
+            {{ add $index 1 }}.&nbsp;
+            {{- if $isCurrent -}}
+              {{- $post.Title }}
+            {{- else -}}
+              <a href="{{ $post.RelPermalink }}">{{ $post.Title }}</a>
+            {{- end -}}
+          </div>
+          <div class="item-date">
+            {{- $post.Date.Format "January 2, 2006" -}}
+            {{- if $isCurrent }} • You are here{{ end -}}
+          </div>
+        </div>
+      {{- end }}
+    </div>
+  </div>
+{{- end -}}

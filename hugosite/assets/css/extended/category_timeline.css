@@ -1,0 +1,107 @@
+.timeline-card {
+    border: 1px solid var(--tertiary);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    background-color: var(--theme);
+    transition: opacity 0.3s ease, padding 0.3s ease;
+    opacity: 1;
+}
+
+.timeline-card.collapsed {
+    height: 0;
+    opacity: 0;
+    padding: 0;
+}
+
+.timeline {
+    padding-left: 48px;
+}
+
+.timeline .item {
+    position: relative;
+    margin-bottom: 20px;
+    color: var(--secondary);
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px;
+    margin-top: -8px;
+    margin-bottom: -8px;
+    margin-left: 4px;
+    /* Compensate for border on current item */
+}
+
+.timeline .item.current {
+    background-color: var(--code-bg);
+    border-radius: 4px;
+    border-left: 4px solid var(--highlight);
+    margin-left: 0px;
+}
+
+.timeline .item::before {
+    /* Green circle for non-current node. */
+    content: '';
+    position: absolute;
+    left: -27.5px;
+    top: 23px;
+    /* Center node vertically */
+    width: 12px;
+    height: 12px;
+    background-color: #10b981;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.timeline .item.current::before {
+    /* Orange outlined circle for current node. */
+    box-sizing: content-box;
+    width: 12px;
+    height: 12px;
+    background-color: var(--highlight);
+    border:  3px solid var(--theme);
+    outline: 3px solid var(--highlight);
+    left: -30.5px;   /* Account for border width */
+    top: 20px;     /* Account for border width */
+}
+
+.timeline .item:not(:last-child)::after {
+    /* Line connecting to next node, after all but last node. */
+    content: '';
+    position: absolute;
+    left: -24px;
+    /* Center line with node */
+    top: 25px;
+    /* Start within node */
+    width: 4px;
+    height: 100%;
+    /* Connect to next node's center */
+    background-color: #10b981;
+    z-index: 0;
+}
+
+.timeline .item.current:not(:last-child)::after {
+    background-color: var(--tertiary);
+    /* Inactive line for current and below */
+}
+
+.timeline .item.inactive::before {
+    background-color: var(--tertiary);
+}
+
+.timeline .item.inactive:not(:last-child)::after {
+    background-color: var(--tertiary);
+}
+
+.timeline .item .item-title {
+    font-weight: 500;
+}
+
+.timeline .item .item-date {
+    font-size: 12px;
+}
+
+.timeline .item a {
+    color: currentColor;
+}
