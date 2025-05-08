@@ -162,6 +162,20 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Actor-Critic Algorithms
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>After implementing and evaluating REINFORCE with baseline, we found that it can produce strong models, but takes a long time to learn an accurate value function due to the high variance of the Monte Carlo samples. In this post, we’ll look at Actor-Critic methods, and in particular the Advantage Actor-Critic (A2C) algorithm1, a synchronous version of the earlier Asynchronous Advantage Actor-Critic (A3C) method, as a way to remedy this.
+Before we start, recall that we introduced a value network as a component of our model; this remains the same for A2C, and in fact we don’t need to modify the network architecture at all to use this newer algorithm. Our model still consists of a residual CNN backbone, a policy head and a value head. The value head serves as the “critic,” whereas the policy head is the “actor”.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-08 21:56:00 +0200 CEST'>May 8, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to Actor-Critic Algorithms" href="https://c-f-h.github.io/post/actor-critic/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Implementing and Evaluating REINFORCE with Baseline
     </h2>
   </header>
@@ -285,19 +299,6 @@ board = torch.zeros((ROWS, COLS), dtype=torch.int8, device=DEVICE) The board is 
   </div>
   <footer class="entry-footer"><span title='2025-04-20 15:35:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
   <a class="entry-link" aria-label="post link to Basic Setup and Play" href="https://c-f-h.github.io/post/basic-setup-and-play/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Connect-Zero: Reinforcement Learning from Scratch
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>For a long time I’ve wanted to get deeper into reinforcement learning (RL), and the project I finally settled on is teaching a neural network model how to play the classic game Connect 4 (pretty sneaky, sis!). Obviously, the name “Connect-Zero” is a cheeky nod to AlphaGo Zero and AlphaZero by DeepMind. I chose Connect 4 because it’s a simple game everyone knows how to play where we can hope to achieve good results without expensive hardware and high training costs.
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-04-20 13:12:41 +0200 CEST'>April 20, 2025</span>&nbsp;·&nbsp;cfh</footer>
-  <a class="entry-link" aria-label="post link to Connect-Zero: Reinforcement Learning from Scratch" href="https://c-f-h.github.io/post/connect-zero/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

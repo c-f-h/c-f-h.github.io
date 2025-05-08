@@ -147,6 +147,20 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Actor-Critic Algorithms
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>After implementing and evaluating REINFORCE with baseline, we found that it can produce strong models, but takes a long time to learn an accurate value function due to the high variance of the Monte Carlo samples. In this post, we’ll look at Actor-Critic methods, and in particular the Advantage Actor-Critic (A2C) algorithm1, a synchronous version of the earlier Asynchronous Advantage Actor-Critic (A3C) method, as a way to remedy this.
+Before we start, recall that we introduced a value network as a component of our model; this remains the same for A2C, and in fact we don’t need to modify the network architecture at all to use this newer algorithm. Our model still consists of a residual CNN backbone, a policy head and a value head. The value head serves as the “critic,” whereas the policy head is the “actor”.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-08 21:56:00 +0200 CEST'>May 8, 2025</span>&nbsp;·&nbsp;cfh</footer>
+  <a class="entry-link" aria-label="post link to Actor-Critic Algorithms" href="https://c-f-h.github.io/post/actor-critic/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">REINFORCE with Baseline
     </h2>
   </header>

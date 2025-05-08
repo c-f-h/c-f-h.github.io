@@ -6,8 +6,26 @@
     <description>Recent content in Math on cfh::blog</description>
     <generator>Hugo -- 0.145.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 29 Apr 2025 08:42:00 +0200</lastBuildDate>
+    <lastBuildDate>Thu, 08 May 2025 21:56:00 +0200</lastBuildDate>
     <atom:link href="https://c-f-h.github.io/tags/math/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Actor-Critic Algorithms</title>
+      <link>https://c-f-h.github.io/post/actor-critic/</link>
+      <pubDate>Thu, 08 May 2025 21:56:00 +0200</pubDate>
+      <guid>https://c-f-h.github.io/post/actor-critic/</guid>
+      <description>&lt;p&gt;After &lt;a href=&#34;https://c-f-h.github.io/post/implementing-rwb/&#34;&gt;implementing and evaluating&lt;/a&gt; REINFORCE with baseline,
+we found that it can produce strong models, but takes a long time to learn an accurate
+value function due to the high variance of the
+&lt;a href=&#34;https://c-f-h.github.io/post/reinforce-with-baseline/#monte-carlo-sampling&#34;&gt;Monte Carlo samples&lt;/a&gt;.
+In this post, we&amp;rsquo;ll look at Actor-Critic methods, and in particular the
+Advantage Actor-Critic (A2C) algorithm&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;,
+a synchronous version of the earlier Asynchronous Advantage Actor-Critic (A3C) method,
+as a way to remedy this.&lt;/p&gt;
+&lt;p&gt;Before we start, recall that we introduced a &lt;a href=&#34;https://c-f-h.github.io/post/reinforce-with-baseline/#the-value-network&#34;&gt;value network&lt;/a&gt; as a component of our model; this remains the same for A2C, and in fact
+we don&amp;rsquo;t need to modify the network architecture at all to use this newer algorithm.
+Our model still consists of a residual CNN backbone, a policy head and a value head.
+The value head serves as the &amp;ldquo;critic,&amp;rdquo; whereas the policy head is the &amp;ldquo;actor&amp;rdquo;.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>REINFORCE with Baseline</title>
       <link>https://c-f-h.github.io/post/reinforce-with-baseline/</link>

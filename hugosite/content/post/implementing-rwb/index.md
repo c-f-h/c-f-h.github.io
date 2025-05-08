@@ -228,6 +228,7 @@ in the last post,
 the Monte Carlo estimate for the value network has high variance, and we observe
 that in the fact that the model needs a lot of samples to learn to predict the returns.
 Even after 1.6M games, the value estimate seems not to have fully converged yet.
+We will investigate a different approach in the [next post]({{< relref actor-critic >}}).
 
 ## Up for a game?
 

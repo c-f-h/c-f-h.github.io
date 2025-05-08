@@ -139,7 +139,7 @@ between the actual return of the current move minus the model's value estimate, 
 The total loss function for REINFORCE with baseline is therefore the slight modification
 
 \[
-    \ell = \underbrace{-(G - v(s)) \log p_a(s)}_{\textsf{policy loss}}
+    \ell^{\textsf{RwB}} = \underbrace{-(G - v(s)) \log p_a(s)}_{\textsf{policy loss}}
     + \underbrace{\alpha (G - v(s))^2}_{\textsf{value loss}}
     - \underbrace{\beta H(p(s))}_{\textsf{entropy bonus}}.
 \]
