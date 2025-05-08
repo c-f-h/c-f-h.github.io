@@ -6,10 +6,11 @@
     background-color: var(--theme);
     transition: opacity 0.3s ease, padding 0.3s ease;
     opacity: 1;
+    overflow: hidden;
 }
 
 .timeline-card.collapsed {
-    height: 0;
+    max-height: 0;
     opacity: 0;
     padding: 0;
 }
