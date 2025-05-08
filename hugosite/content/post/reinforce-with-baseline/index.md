@@ -116,8 +116,8 @@ In other words: we need many samples to arrive at a good estimation
 of the value (because of the high variance), but once we have collected them, the
 estimate of the true value is very accurate (low bias).
 
-Later in the series, we will encounter ways to trade off lower variance against a higher
-bias. For now, though, we stick with Monte Carlo sampling.
+[Later in the series]({{< relref actor-critic >}}), we will encounter ways to trade off lower
+variance against a higher bias. For now, though, we stick with Monte Carlo sampling.
 
 The high variance in the observed returns \(G\)
 is precisely why the basic REINFORCE algorithm suffers from noisy updates.
