@@ -3,7 +3,7 @@ languageCode: en-us
 title: "cfh::blog"
 theme: ["PaperMod"]
 
-publishDir: ../docs
+publishDir: ../public
 cleanDestinationDir: true
 
 pagination:

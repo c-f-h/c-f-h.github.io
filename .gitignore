@@ -2,4 +2,4 @@
 # a Gemfile as specified at https://github.com/github/pages-gem#conventional
 
 .hugo_build.lock
-
+/public/
