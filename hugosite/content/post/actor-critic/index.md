@@ -138,4 +138,5 @@ To summarize, this version of A2C combines one-step bootstrapping from TD learni
 baseline-adjusted policy update.
 It combines the strengths of REINFORCE with baseline (via advantage estimation) and TD learning
 (lower-variance updates).
-In the next installment of the series, we'll implement the A2C method for our Connect 4 agent.
+In the [next installment of the series]({{< relref implementing-a2c >}}) , we'll implement the
+A2C method for our Connect 4 agent.

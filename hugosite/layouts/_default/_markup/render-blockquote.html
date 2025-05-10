@@ -7,17 +7,14 @@
   }}
   
   {{ if eq .Type "alert" }}
-    <blockquote class="alert alert-{{ .AlertType }}">
-      <p class="alert-heading">
-        {{ transform.Emojify (index $emojis .AlertType) }}
-        {{ with .AlertTitle }}
-          <b>{{ . }}</b>
-        {{ else }}
-          {{ or (i18n .AlertType) (title .AlertType) }}
-        {{ end }}
-      </p>
-      {{ .Text }}
-    </blockquote>
+    <div class="alert alert-{{ .AlertType }}">
+      <div class="header">
+        {{ readFile (printf "/assets/icons/%s-icon.svg" .AlertType) | safeHTML }}
+        <span>{{ title .AlertType }}{{ with .AlertTitle }} &dash; {{ . }}{{ end }}
+        </span>
+      </div>
+        <p>{{ .Text }}</p>
+    </div>
   {{ else }}
     <blockquote>
       {{ .Text }}

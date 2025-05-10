@@ -1,28 +1,41 @@
-.example-code {
+.alert {
     margin: 8px 0;
     padding: 12px;
     color: var(--primary);
     background-color: var(--code-bg);
-    border-left: 10px solid #28a451;
+    border-left: 10px solid;
     border-radius: 6px;
 }
 
-.example-code .header {
+.alert .header {
     font-weight: bolder;
     margin-bottom: 4px;
-    color: #28a451;
 }
 
-.example-code svg {
+.alert svg {
     height: 24px;
     margin-right: 6px;
     vertical-align: middle;
 }
-.example-code span {
+
+.alert span {
     vertical-align: middle;
 }
 
+
+.example-code {
+    border-color: #28a451;
+}
+.example-code .header {
+    color: #28a451;
+}
 .example-code a {
     font-family: monospace;
 }
 
+.alert-note {
+    border-color: #3e57fe;
+}
+.alert-note .header {
+    color: #3e57fe;
+}
