@@ -232,5 +232,6 @@ The paper [What Matters In On-Policy Reinforcement Learning?](https://arxiv.org/
 from the Google Brain Team also didn't find strong evidence for the normalization being
 essential, so I feel justified in omitting it for now.
 
-This concludes our tour of some implementation issues arising in A2C. We'll evaluate the
-performance of the algorithm in a future post.
+This concludes our tour of some implementation issues arising in A2C.
+[Next up]({{< relref evaluating-a2c >}}) we'll have a little shootout to see if A2C can
+actually improve upon REINFORCE with baseline!
