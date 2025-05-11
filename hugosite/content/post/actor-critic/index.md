@@ -98,14 +98,15 @@ because it relies on the current estimate of the value function which may still 
 accurate.
 
 In terms of credit assignment, this approach has clear advantages: instead of ramping
-up smoothly over the duration of a game, the bootstrapped valuecan more sharply distinguish key
+up smoothly over the duration of a game, the bootstrapped value can more sharply distinguish key
 decision points such as blunders or forced wins.
 If the next state \(s'\) leaves our opponent with a clear winning
 move, then this should be reflected in a \(v(s')\) close to -1 and therefore pull the valuation
 for \(v(s)\) towards -1 as well.
 
 Another way to look at it is that this bootstrapping technique uses one step of lookahead to
-improve the value estimate. There are more advanced techniques which use several time steps
+improve the value estimate. There are more advanced techniques which
+[use several time steps]({{< relref multistep-bootstrapping >}})
 or blend them with Monte Carlo estimates to achieve a tradeoff of variance and bias,
 but for now we stick to this simplest variant.
 
