@@ -1,7 +1,7 @@
 ---
 title: 'Actor-Critic Algorithms'
 date: 2025-05-08T21:56:00+02:00
-tags: ['ML', 'RL', 'Math']
+tags: ['ML', 'RL', 'Math', 'A2C']
 categories: ['Connect-Zero']
 ---
 

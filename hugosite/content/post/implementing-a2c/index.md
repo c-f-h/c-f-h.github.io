@@ -1,7 +1,7 @@
 ---
 title: 'Implementing A2C'
 date: 2025-05-10T18:43:00+02:00
-tags: ['Python', 'PyTorch', 'ML', 'RL']
+tags: ['Python', 'PyTorch', 'ML', 'RL', 'A2C']
 categories: ['Connect-Zero']
 ---
 
@@ -48,7 +48,7 @@ which are the sums of all discounted future rewards, and actions take us
 from one state to the next and have immediate rewards associated to them. In our case, all
 the rewards are zero except for a winning action, which has reward 1.
 
-<figure>
+<figure class="align-center">
 <svg viewbox="30 25 570 100" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" fill="currentColor" stroke="currentColor" stroke-width="1.5">
   <!-- States -->
   <rect x="50" y="80" width="80" height="40" fill="none" />

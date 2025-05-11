@@ -1,7 +1,7 @@
 ---
 title: 'Evaluating A2C versus REINFORCE with baseline'
 date: 2025-05-11T11:56:00+02:00
-tags: ['ML', 'RL']
+tags: ['ML', 'RL', 'A2C']
 categories: ['Connect-Zero']
 ---
 

@@ -4,6 +4,10 @@ svg.diagram {
   font-size: 0.75em; /* avoid overlapping letters */
 }
 
+figure > figcaption {
+  text-align: left;
+}
+
 figure > figcaption > p {
   margin: 8px 16px;
 }
