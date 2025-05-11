@@ -16,3 +16,6 @@ onnx: true
 The computer opponent is a neural network trained using reinforcement learning.
 It was exported to ONNX and now runs right here in your browser.
 See [Connect-Zero]({{<relref connect-zero>}}) and the follow-up posts for details.
+
+This isn't a particularly strong model yet: it still has many tactical and
+strategic blind spots. We'll train much stronger models over the course of the series.

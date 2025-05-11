@@ -212,8 +212,8 @@ increases.
 
 ## Conclusion
 
-The model we trained is now a seriously strong player, completely eviscerating the once so
-intimidating ``RandomPunisher``. It even beats the already quite strong model which served
+The model we trained is already a pretty strong player, completely eviscerating the once so
+intimidating ``RandomPunisher``. It also beats the model which served
 as the interactive opponent in the [teaser post]({{< relref connect-4 >}}) for this series
 around 75% of the time.
 
