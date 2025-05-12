@@ -115,7 +115,7 @@ def play(model1, model2):
 
         while True:
             # Get move from the model, play it and check for a win
-            move = sample_move(model1, board, output_probs=output)
+            move = sample_move(model1, board)
             board, win = make_move_and_check(board, move)
 
             if win:
@@ -145,12 +145,12 @@ indicates if the model won or lost the game. So after playing one or a batch of 
 we'll get three tensors
 
 ```
-    all_states:   (N, 6, 7)    dtype=torch.int8
-    all_moves:    (N,)         dtype=torch.long
-    all_returns:  (N,)         dtype=torch.float32
+    all_states:   (B, 6, 7)    dtype=torch.int8
+    all_moves:    (B,)         dtype=torch.long
+    all_returns:  (B,)         dtype=torch.float32
 ```
 
-Here ``N`` is the total number of moves the model made across all games played.
+Here ``B`` is the total number of moves the model made across all games played.
 We'll talk about the exact form the returns take
 [in the next post]({{< relref the-reinforce-algorithm >}}), but for now just think
 of them as being +1 for a win, 0 for a draw, and -1 for a loss.
